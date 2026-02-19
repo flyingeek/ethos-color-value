@@ -21,10 +21,10 @@
 ![menu RxBatt](screenshots/menu_rxBatt.webp "RxBatt contextual menu")
 <p style="text-align:center;">RxBatt contextual menu</p>
 
-![config Timer1](screenshots/config_Panel_timer1.webp "Timer1 configuration screen")
+![config Timer1](screenshots/config_panel_timer1.webp "Timer1 configuration screen")
 <p style="text-align:center;">Timer colorization</p>
 
-![config VFT](screenshots/config_Panel_vfr.webp "VFR configuration screen")
+![config VFT](screenshots/config_panel_vfr.webp "VFR configuration screen")
 <p style="text-align:center;">VFR configuration screen (Min/Max ON)</p>
 
 ## What's in the box ?
