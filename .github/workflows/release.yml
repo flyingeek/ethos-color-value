@@ -32,6 +32,7 @@ jobs:
 
     - name: Make release package
       run: |
+          mkdir -p ./build/scripts
           rsync -rhaq ./color-value ./build/scripts/
           cd build && zip -q -r "ethos-color-value-${{ env.GIT_VER }}.zip" scripts*
 
