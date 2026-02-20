@@ -30,3 +30,5 @@
 ## What's in the box ?
 
 When you install this file, it will install two widgets: **Color Value** and **Color Telemetry**. Both share the same code, the difference is that the **Color Telemetry** limits the source to be a sensor.
+
+To install, go to the [latest release page](https://github.com/flyingeek/ethos-color-value/releases/latest) and follow the instructions.
