@@ -6,17 +6,15 @@ local defaultShowMinMax = true
 local WIDGET_TYPE_SOURCE = 1
 local WIDGET_TYPE_SENSOR = 2
 local ethosVersion = system.getVersion()
-local isUTF8Compatible = tonumber(ethosVersion.major .. ethosVersion.minor) >= 17
 local runningInSimulator = ethosVersion.simulation
 
-system.compile("i18n/locales.lua")
 system.compile("lib/init.lua")
 local L = assert(loadfile("lib/init.luac", "b")({
     -- those parameters are accessible under the L namespace
     defaultSourcePrecision = 0,
     infoIcon = lcd.loadMask("bitmaps/icon_info.png"),
     deleteIcon = lcd.loadMask("bitmaps/mask_delete_icon.png"),
-    translate=assert(loadfile("i18n/locales.luac", "b"))(isUTF8Compatible).translate
+    isUTF8Compatible=tonumber(ethosVersion.major .. ethosVersion.minor) >= 17
 }, "L")) -- here "L" is the namespace used in the lib files
 
 local __ = L.translate
@@ -45,10 +43,10 @@ local function createTypeSensor()
 end
 
 local function nameTypeSource()
-    return __("widgetNameTypeSource")
+    return __("widgetNameTypeSourceASCII")
 end
 local function nameTypeSensor()
-    return __("widgetNameTypeSensor")
+    return __("widgetNameTypeSensorASCII")
 end
 
 local function configure(widget)
@@ -157,7 +155,7 @@ local function paint(widget)
         local maxHeight = (valueY/2) - ((3 * margin)/4)
         -- find and set best font size for the widget's size
         local minValueWidth, minValueHeight = L.bestOverlap(formattedMinValue, {FONT_STD, FONT_S}, (w - valueWidth)/2 , maxHeight, "0")
-        local maxValueWidth, maxValueHeight = L.getTextSizeUTF8(formattedMaxValue, nil, "0")
+        local maxValueWidth, maxValueHeight = lcd.getTextSize(L.isUTF8Compatible and formattedMaxValue or L.replaceUTF8(formattedMaxValue, "0"))
         local minValueY = maxValueY + maxValueHeight + (margin/2)
         lcd.color(defaultColor)
         lcd.drawText(w - margin, maxValueY, formattedMaxValue, TEXT_RIGHT)
@@ -204,17 +202,17 @@ local function menu(widget)
     if widget.source and widget.source.reset then
         if L.isSensor(widget.source) then
             table.insert(menuData, {
-                    string.format(__("minimumMenu"), L.formatWithDecimals(widget.source:minimum(), widget.source), widget.source:stringUnit()),
+                    string.format(__("minimumMenuASCII"), L.formatWithDecimals(widget.source:minimum(), widget.source), widget.source:stringUnit()),
                     function() end
                 })
             table.insert(menuData,{
-                    string.format(__("maximumMenu"), L.formatWithDecimals(widget.source:maximum(), widget.source), widget.source:stringUnit()),
+                    string.format(__("maximumMenuASCII"), L.formatWithDecimals(widget.source:maximum(), widget.source), widget.source:stringUnit()),
                     function() end
                 })
         end
         if L.isSensor(widget.source) or L.isTimer(widget.source) then
             table.insert(menuData,{
-                string.format(__("resetMenu"), widget.source:name()),
+                string.format(__("resetMenuASCII"), widget.source:name()),
                 function() widget.source:reset() widget.value = nil end
             })
         end

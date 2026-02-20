@@ -1,12 +1,22 @@
+local params = {...}
+local isUTF8Compatible = params[1]
 local locales = {}
 
-locales.widgetNameTypeSource = { -- no accentuated characters here for ethos < 1.7 compatibility
+locales.widgetNameTypeSourceASCII = { -- no accentuated characters here for ethos < 1.7 compatibility
     en = "Color Value",
     fr = "Valeur en couleur",
 }
-locales.widgetNameTypeSensor = { -- no accentuated characters here for ethos < 1.7 compatibility
+locales.widgetNameTypeSourceUTF8 = { -- utf8 version
+    en = "Color Value",
+    fr = "Valeur en couleur",
+}
+locales.widgetNameTypeSensorASCII = { -- no accentuated characters here for ethos < 1.7 compatibility
     en = "Color Telemetry",
     fr = "Telemetrie en couleur",
+}
+locales.widgetNameTypeSensorUTF8 = { -- utf8 version
+    en = "Color Telemetry",
+    fr = "Télémetrie en couleur",
 }
 locales.source = {
     en = "Source",
@@ -71,15 +81,27 @@ locales.showMinMax = {
     en = "Minimum and Maximum",
     fr = "Minimum et Maximum",
 }
-locales.resetMenu = { -- no accentuated characters here for ethos < 1.7 compatibility
+locales.resetMenuASCII = { -- no accentuated characters here for ethos < 1.7 compatibility
     en = "Reset %s",
     fr = "Reinitialiser %s",
 }
-locales.minimumMenu = { -- no accentuated characters here for ethos < 1.7 compatibility
+locales.resetMenuUTF8 = { -- utf8 version
+    en = "Reset %s",
+    fr = "Réinitialiser %s",
+}
+locales.minimumMenuASCII = { -- no accentuated characters here for ethos < 1.7 compatibility
     en = "Minimum : %s%s",
     fr = "Minimum : %s%s",
 }
-locales.maximumMenu = { -- no accentuated characters here for ethos < 1.7 compatibility
+locales.minimumMenuUTF8 = { -- utf8 version
+    en = "Minimum : %s%s",
+    fr = "Minimum : %s%s",
+}
+locales.maximumMenuASCII = { -- no accentuated characters here for ethos < 1.7 compatibility
+    en = "Maximum : %s%s",
+    fr = "Maximum : %s%s",
+}
+locales.maximumMenuUTF8 = { -- utf8 version
     en = "Maximum : %s%s",
     fr = "Maximum : %s%s",
 }
@@ -102,7 +124,11 @@ locales.infoPanelAuthor = {
 local function translate(key, locale)
     local ANSI_BOLD_YELLOW = "\27[1;33m"
     local ANSI_RESET  = "\27[0m"
-    local translations = locales[key]
+    local cKey = key
+    if isUTF8Compatible and string.find(cKey, "ASCII$", 1, false) then
+        cKey = string.gsub(cKey, "ASCII$", "UTF8")
+    end
+    local translations = locales[cKey]
     if locale == nil then locale = system.getLocale() end
     if translations then
         local translation = translations[locale]
@@ -111,13 +137,13 @@ local function translate(key, locale)
         else
             translation = translations["en"]
             if translation then
-                warn(ANSI_BOLD_YELLOW .. string.format("using fallback translation [en] for key %s (locale: %s)", key, locale) .. ANSI_RESET)
+                warn(ANSI_BOLD_YELLOW .. string.format("using fallback translation [en] for key %s (locale: %s)", cKey, locale) .. ANSI_RESET)
                 return translation
             end
         end
     end
-    warn(ANSI_BOLD_YELLOW .. string.format("no translation found for key %s (locale: %s)", key, locale) .. ANSI_RESET)
-    return key
+    warn(ANSI_BOLD_YELLOW .. string.format("no translation found for key %s (locale: %s)", cKey, locale) .. ANSI_RESET)
+    return cKey
 end
 
 return { translate = translate }

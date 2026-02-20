@@ -1,5 +1,7 @@
 ---@diagnostic disable-next-line: undefined-global
 local defaultSourcePrecision = L.defaultSourcePrecision
+---@diagnostic disable-next-line: undefined-global
+local isUTF8Compatible = L.isUTF8Compatible
 
 local function isSensor(source)
     return source and source:category() == CATEGORY_TELEMETRY_SENSOR
@@ -11,28 +13,22 @@ local function sourceExists(source)
     return source and source:category() ~= CATEGORY_NONE
 end
 
-local function _replaceUTF8(text, altChar)
+local function replaceUTF8(text, altChar)
     if not altChar then altChar = " " end
     return tostring(text):gsub("[\128-\255\194-\244][\128-\191]*", altChar)
 end
 
-local function getTextSizeUTF8(str, font, altChar)
-    -- lcd.getTextSize on ethos < 1.7 is not utf-8 compatible
-    if font then lcd.font(font) end
-    if not altChar then altChar = " " end
-    local newText = _replaceUTF8(str, altChar)
-    return lcd.getTextSize(newText)
-end
-
 -- set the font to fit text into a box (fit maxWidth and fit maxHeight) maxWidth or maxHeight may be nil
 local function bestFit(str, fontIndexList, maxWidth, maxHeight, altChar)
-    -- lcd.getTextSize on ethos < 1.7 is not utf-8 compatible
-    local ascii = _replaceUTF8(str, altChar)
+    local text = str
+    if not isUTF8Compatible then
+        text = replaceUTF8(str, altChar)
+    end
     local tw, th
     local overflow = true
     for _, font in pairs(fontIndexList) do
         lcd.font(font)
-        tw, th = lcd.getTextSize(ascii)
+        tw, th = lcd.getTextSize(text)
         if (maxWidth == nil or (maxWidth and tw <= maxWidth)) and (maxHeight == nil or (maxHeight and th <= maxHeight)) then
             overflow = false
             break
@@ -43,12 +39,15 @@ end
 
 -- set the font for the best overlap (fit maxWidth OR fit maxHeight)
 local function bestOverlap(str, fontList, maxWidth, maxHeight, altChar)
-    local ascii = _replaceUTF8(str, altChar)
+    local text = str
+    if not isUTF8Compatible then
+        text = replaceUTF8(str, altChar)
+    end
     local tw, th
     local overflow = true
     for _, font in pairs(fontList) do
         lcd.font(font)
-        tw, th = lcd.getTextSize(ascii)
+        tw, th = lcd.getTextSize(text)
         if th < maxHeight or tw < maxWidth then
             overflow = false
             break
@@ -81,7 +80,7 @@ return {
     isSensor=isSensor,
     isTimer=isTimer,
     sourceExists=sourceExists,
-    getTextSizeUTF8=getTextSizeUTF8,
+    replaceUTF8=replaceUTF8,
     bestFit=bestFit,
     bestOverlap=bestOverlap,
     formatWithDecimals=formatWithDecimals

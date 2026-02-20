@@ -4,7 +4,11 @@ local __ = L.translate
 
 local function fillLogicPanel(panel, widget)
     if panel == nil then return end
-    local choices = {{" <= ", L.OPE_LESS_OR_EQUAL}, {" < ", L.OPE_LESS}, {" > ", L.OPE_MORE}, {" >= ", L.OPE_MORE_OR_EQUAL}}
+    local choices = {
+        {L.isUTF8Compatible and " ≤ " or " <= ", L.OPE_LESS_OR_EQUAL},
+        {" < ", L.OPE_LESS},
+        {" > ", L.OPE_MORE},
+        {L.isUTF8Compatible and " ≥ " or" >= ", L.OPE_MORE_OR_EQUAL}}
     local maxConditions = 5
     local line
     local slots
