@@ -55,8 +55,12 @@ function LogicCase:loadStorageString(s)
     return self
 end
 
-local function newLogics(source)
-    local logics = {}
+local LogicCases = {}
+
+function LogicCases:new (source)
+    local o = {logicCases = {}}
+    setmetatable(o, self)
+    self.__index = self
     if isTimer(source) then
         local timer = model.getTimer(source:member())
         if timer then
@@ -65,16 +69,84 @@ local function newLogics(source)
                 if direction > 0 then
                     local alarm = timer:alarm()
                     if alarm  and alarm > 0 then
-                        table.insert(logics, LogicCase:new({ope=OPE_MORE_OR_EQUAL, threshold=alarm}))
+                        table.insert(o.logicCases, LogicCase:new({ope=OPE_MORE_OR_EQUAL, threshold=alarm}))
                     end
                 else
-                    table.insert(logics, LogicCase:new({ope=OPE_LESS_OR_EQUAL, threshold=0}))
+                    table.insert(o.logicCases, LogicCase:new({ope=OPE_LESS_OR_EQUAL, threshold=0}))
                 end
             end
         end
     end
-    return logics
+    return o
 end
+
+function LogicCases:add(logicCase)
+    local count = #(self.logicCases)
+    local newLogic = logicCase or LogicCase:new()
+    if count >= 1 then
+        newLogic.ope = self.logicCases[count].ope
+        newLogic.threshold = self.logicCases[count].threshold
+    end
+    table.insert(self.logicCases, newLogic)
+    return newLogic
+end
+function LogicCases:remove(pos)
+    table.remove(self.logicCases, pos)
+    return self
+end
+function LogicCases:__tostring()
+    local out = "{"
+    for k, logicCase in pairs(self.logicCases) do
+        out = "\n" .. out .. logicCase
+    end
+    if #(self.logicCases) > 0 then  out = out .. "\n" end
+    out = out .."}"
+    return out
+end
+function LogicCases:asStorageString()
+    local out=""
+    for i,logicCase in pairs(self.logicCases) do
+        local sep = i > 1 and "/" or ""
+        out = out .. sep .. logicCase:asStorageString()
+    end
+    return out
+end
+function LogicCases:loadStorageString(s)
+    for line in string.gmatch(s, "([^/]+)") do
+        table.insert(self.logicCases, LogicCase:new():loadStorageString(line))
+    end
+    return self
+end
+function LogicCases:get(pos)
+    return self.logicCases[pos]
+end
+function LogicCases:matchIndex(value)
+    if not value then return nil end
+    local index
+    for i, logicCase in pairs(self.logicCases) do
+        if logicCase:test(value) then
+            index = i
+            break
+        end
+    end
+    return index
+end
+function LogicCases:match(value)
+    if not value then return nil end
+    local matchingCase
+    for i, logicCase in pairs(self.logicCases) do
+        if logicCase:test(value) then
+            matchingCase = logicCase
+            break
+        end
+    end
+    return matchingCase
+end
+
+function LogicCases:count()
+    return #(self.logicCases)
+end
+
 
 return {
     LogicCase = LogicCase,
@@ -82,5 +154,5 @@ return {
     ["OPE_LESS"] = OPE_LESS,
     ["OPE_MORE"] = OPE_MORE,
     ["OPE_MORE_OR_EQUAL"] = OPE_MORE_OR_EQUAL,
-    newLogics=newLogics
+    LogicCases = LogicCases
 }

@@ -12,7 +12,7 @@ local function fillLogicPanel(panel, widget)
     local maxConditions = 5
     local line
     local slots
-    local count = #(widget.logics)
+    local count = widget.logics:count()
     local dialogWidth = math.floor(lcd.getWindowSize() * 0.9)
     local confirmDialogWidth = math.floor(math.min(400, lcd.getWindowSize() * 0.8))
     panel:clear()
@@ -20,36 +20,16 @@ local function fillLogicPanel(panel, widget)
     local conditionLabel = L.sourceExists(widget.source) and widget.source:name() or ""
     if conditionLabel ~= "" then conditionLabel = string.format(__("conditionLabel"), conditionLabel) end
     local caseTexts = {} -- a list of all the "Case%d" staticTextField
-    -- delete the logic case @index
-    local function doDelete(index)
-        table.remove(widget.logics, index)
-        model.dirty() -- triggers the write widget method
-    end
-    -- adds a logic case
-    local function doAdd()
-        local newLogic = L.LogicCase:new()
-        if count >= 1 then
-            newLogic.ope = widget.logics[count].ope
-            newLogic.threshold = widget.logics[count].threshold
-        end
-        table.insert(widget.logics, newLogic)
-        model.dirty()
-    end
     -- hightlight or normalizes all the case based on the logic conditions
     local function highlightValidCase()
-        local hasMatch = false
         local defaultColor = lcd.themeColor(14)
         local highlightColor = lcd.darkMode() and lcd.themeColor(THEME_DEFAULT_COLOR) or lcd.color(BLACK)
+        local match = widget.logics:matchIndex(widget.value)
         for j, staticText in pairs(caseTexts) do
-            if hasMatch == false and widget.logics[j]:test(widget.value) then
-                staticText:color(highlightColor)
-                hasMatch = true -- only the first match
-            else
-                staticText:color(defaultColor)
-            end
+            staticText:color(j == match and highlightColor or defaultColor)
         end
     end
-    for i, logic in pairs(widget.logics) do
+    for i=1,widget.logics:count() do
         line = panel:addLine("", i == count and count >= maxConditions)
         -- "Case%d" at the beginning of the line as a staticText to be able to colorize it
         local caseLabel = string.format(__("case"), i)
@@ -65,7 +45,7 @@ local function fillLogicPanel(panel, widget)
             {
                 icon=L.deleteIcon,
                 press=L.confirm(
-                    function() doDelete(i) return fillLogicPanel(panel, widget) end,
+                    function() widget.logics:remove(i) model.dirty() return fillLogicPanel(panel, widget) end,
                     string.format(__("caseDeleteMessage"), i),
                     confirmDialogWidth
                 )
@@ -74,15 +54,17 @@ local function fillLogicPanel(panel, widget)
         -- now we can use the auto positionning for the operator, the threshold and the color
         slots = form.getFieldSlots(line, {90, 0, 70})
         form.addChoiceField(line, slots[1], choices,
-            function() return widget.logics[i].ope end,
-            function(newValue) widget.logics[i].ope = newValue return highlightValidCase() end
+            function() return widget.logics:get(i).ope end,
+            function(newValue) widget.logics:get(i).ope = newValue return highlightValidCase() end
         ):focus()
         local factoredField = L.addFactoredNumberField(line, slots[2], 0, 0, -- no need to care about min and max here
-            function() return widget.logics[i].threshold end,
-            function(newValue) widget.logics[i].threshold = newValue return highlightValidCase() end
+            function() return widget.logics:get(i).threshold end,
+            function(newValue) widget.logics:get(i).threshold = newValue return highlightValidCase() end
         )
         factoredField.updateFromSource(widget.source)
-        form.addColorField(line, slots[3], function() return widget.logics[i].color end, function(newValue) widget.logics[i].color = newValue end)
+        form.addColorField(line, slots[3],
+            function() return widget.logics:get(i).color end,
+            function(newValue) widget.logics:get(i).color = newValue end)
     end
     highlightValidCase()
     if count < maxConditions and widget.source ~= nil and widget.source:name()~="---" then
@@ -107,7 +89,10 @@ local function fillLogicPanel(panel, widget)
             }
         )
         -- auto positionned Add button
-        local addButton = form.addButton(line, nil, {text="+", press=function() doAdd() return fillLogicPanel(panel, widget) end})
+        local addButton = form.addButton(line, nil, {
+            text="+",
+            press=function() widget.logics:add() model.dirty() return fillLogicPanel(panel, widget) end
+        })
         if count == 0 then
             addButton:focus()
         end

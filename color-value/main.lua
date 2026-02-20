@@ -23,7 +23,7 @@ local function createTypeSource()
      return {
         -- configure parameters (saved in storage)
         source=nil,
-        logics=L.newLogics(),
+        logics=L.LogicCases:new(),
         showTitle=true,
         showMinMax=defaultShowMinMax,
         type=WIDGET_TYPE_SOURCE,
@@ -57,7 +57,7 @@ local function configure(widget)
         function(newValue)
             if newValue ~= widget.source then
                 widget.source =  newValue
-                widget.logics = L.newLogics(newValue)
+                widget.logics = L.LogicCases:new(newValue)
                 widget.showMinMax = defaultShowMinMax
                 form.clear()
                 return configure(widget) --tail call
@@ -133,13 +133,9 @@ local function paint(widget)
     local valueY = (margin + titleHeight - valueHeight + h) / 2
     -- choose color using Default Color, Logic Color or Telemetry Lost Color
     lcd.color(defaultColor)
-    if widget.value ~= nil then
-        for i, logic in pairs(widget.logics) do
-            if logic:test(widget.value) then
-                lcd.color(logic.color)
-                break
-            end
-        end
+    local matchingCase = widget.logics:match(widget.value)
+    if matchingCase then
+        lcd.color(matchingCase.color)
     end
     if widget.value ~= nil and widget.telemetryState == false and L.isSensor(widget.source) then -- telemetry lost
         lcd.color(warningColor)
@@ -172,12 +168,7 @@ end
 local function read(widget)
     widget.source = storage.read("source")
     widget.showTitle = storage.read("showTitle")
-    local logicString = storage.read("logics") or ""
-    local logics = {}
-    for line in string.gmatch(logicString, "([^/]+)") do
-        table.insert(logics, L.LogicCase:new():loadStorageString(line))
-    end
-    widget.logics = logics
+    widget.logics = L.LogicCases:new():loadStorageString(storage.read("logics") or "")
     widget.showMinMax = storage.read("showMinMax")
     widget.type = storage.read("type")
 end
@@ -186,13 +177,8 @@ local function write(widget)
     --print("storage.write")
     storage.write("source", widget.source)
     storage.write("showTitle", widget.showTitle)
-    local logicString=""
-    for i,logicCase in pairs(widget.logics) do
-        local sep = i > 1 and "/" or ""
-        logicString = logicString .. sep .. logicCase:asStorageString()
-    end
-    storage.write("logics", logicString)
-    --print(string.format("logics: %s",logicString))
+    storage.write("logics", widget.logics:asStorageString())
+    --print(string.format("logics: %s", widget.logics:asStorageString()))
     storage.write("showMinMax", widget.showMinMax)
     storage.write("type", widget.type)
 end
