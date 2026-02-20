@@ -5,7 +5,9 @@ local refreshRate = 1/10 -- 10Hz
 local defaultShowMinMax = true
 local WIDGET_TYPE_SOURCE = 1
 local WIDGET_TYPE_SENSOR = 2
-local runningInSimulator = system.getVersion().simulation
+local ethosVersion = system.getVersion()
+local isUTF8Compatible = tonumber(ethosVersion.major .. ethosVersion.minor) >= 17
+local runningInSimulator = ethosVersion.simulation
 
 system.compile("i18n/locales.lua")
 system.compile("lib/init.lua")
@@ -14,7 +16,7 @@ local L = assert(loadfile("lib/init.luac", "b")({
     defaultSourcePrecision = 0,
     infoIcon = lcd.loadMask("bitmaps/icon_info.png"),
     deleteIcon = lcd.loadMask("bitmaps/mask_delete_icon.png"),
-    translate=assert(loadfile("i18n/locales.luac", "b"))().translate
+    translate=assert(loadfile("i18n/locales.luac", "b"))(isUTF8Compatible).translate
 }, "L")) -- here "L" is the namespace used in the lib files
 
 local __ = L.translate
