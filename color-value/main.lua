@@ -187,14 +187,22 @@ local function menu(widget)
     local menuData = {}
     if widget.source and widget.source.reset then
         if L.isSensor(widget.source) then
-            table.insert(menuData, {
-                    string.format(__("minimumMenuASCII"), L.formatWithDecimals(widget.source:minimum(), widget.source), widget.source:stringUnit()),
-                    function() end
-                })
-            table.insert(menuData,{
-                    string.format(__("maximumMenuASCII"), L.formatWithDecimals(widget.source:maximum(), widget.source), widget.source:stringUnit()),
-                    function() end
-                })
+            if widget.minimum then
+                table.insert(menuData, {
+                        string.format(__("minimumMenuASCII"),
+                        L.formatWithDecimals(widget.minimum, widget.source),
+                        widget.source:stringUnit()),
+                        function() end
+                    })
+            end
+            if widget.maximum then
+                table.insert(menuData,{
+                        string.format(__("maximumMenuASCII"),
+                        L.formatWithDecimals(widget.maximum, widget.source),
+                        widget.source:stringUnit()),
+                        function() end
+                    })
+            end
         end
         if L.isSensor(widget.source) or L.isTimer(widget.source) then
             table.insert(menuData,{
