@@ -26,7 +26,7 @@ locales.case = {
     en = "Case%d",
     fr = "Cas%d",
 }
-locales.caseDeleteTitle = {
+locales.confirmTitle = {
     en = "Confirm",
     fr = "Confirmation",
 }

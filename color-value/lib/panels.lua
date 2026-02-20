@@ -64,17 +64,11 @@ local function fillLogicPanel(panel, widget)
             {x=slots[1].x - conditionLabelWidth - 10 - 50 - 10, y=slots[1].y, w=50, h=slots[1].h}, -- rect
             {
                 icon=L.deleteIcon,
-                press=function ()
-                    return form.openDialog({
-                        title=string.format(__("caseDeleteTitle"), i),
-                        message=string.format(__("caseDeleteMessage"), i),
-                        width=confirmDialogWidth,
-                        buttons={
-                            {label=__("no"), action=function() return true end},
-                            {label=__("yes"), action=function() doDelete(i) return fillLogicPanel(panel, widget) or true end}},
-                        options=TEXT_LEFT
-                    })
-                end
+                press=L.confirm(
+                    function() doDelete(i) return fillLogicPanel(panel, widget) end,
+                    string.format(__("caseDeleteMessage"), i),
+                    confirmDialogWidth
+                )
             }
         )
         -- now we can use the auto positionning for the operator, the threshold and the color

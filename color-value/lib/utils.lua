@@ -2,6 +2,8 @@
 local defaultSourcePrecision = L.defaultSourcePrecision
 ---@diagnostic disable-next-line: undefined-global
 local isUTF8Compatible = L.isUTF8Compatible
+---@diagnostic disable-next-line: undefined-global
+local __ = L.translate
 
 local function isSensor(source)
     return source and source:category() == CATEGORY_TELEMETRY_SENSOR
@@ -60,6 +62,22 @@ local function formatWithDecimals(value, source)
     if not value then return "" end
     return string.format("%.0" .. (source:decimals() or defaultSourcePrecision) .. "f", value)
 end
+
+--- wraps in a confirm dialog, accept fn of a text button or options of a button
+---@param fn (function)
+---@return any
+local function confirm(fn, message, width)
+    return function() return form.openDialog({
+        title=string.format(__("confirmTitle")),
+        message=message,
+        width=width,
+        buttons={
+            {label=__("no"), action=function() return true end},
+            {label=__("yes"), action=function() return fn() or true end},
+        },
+        options=TEXT_LEFT
+    }) end
+end
 --[[
 --I used this to find the theme color of titleColor (14)
 function lcd.unRGB(rgba)
@@ -83,5 +101,6 @@ return {
     replaceUTF8=replaceUTF8,
     bestFit=bestFit,
     bestOverlap=bestOverlap,
-    formatWithDecimals=formatWithDecimals
+    formatWithDecimals=formatWithDecimals,
+    confirm = confirm
 }
