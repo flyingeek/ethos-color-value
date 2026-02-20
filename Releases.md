@@ -1,6 +1,7 @@
-# 1.0.0
+# 1.0.1
 
-This is the first release for the Color Value Widget for Frsky Ethos.
+- fix a bug in the contextual menu where minimum and maximum values were wrong
+- ethos >= 1.7 will allow accentuated characters in widget name, menus and choices
 
 ## Download
 
