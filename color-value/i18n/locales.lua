@@ -125,8 +125,8 @@ local function translate(key, locale)
     local ANSI_BOLD_YELLOW = "\27[1;33m"
     local ANSI_RESET  = "\27[0m"
     local cKey = key
-    if isUTF8Compatible and string.find(cKey, "ASCII$", 1, false) then
-        cKey = string.gsub(cKey, "ASCII$", "UTF8")
+    if isUTF8Compatible and key:sub(-5) == "ASCII" then
+        cKey = key:sub(1, -6) .. "UTF8"
     end
     local translations = locales[cKey]
     if locale == nil then locale = system.getLocale() end
