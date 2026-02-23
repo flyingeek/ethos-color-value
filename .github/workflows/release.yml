@@ -32,7 +32,7 @@ jobs:
 
     - name: Make release package
       run: |
-          zip -q -r "color-value-${{ env.GIT_VER }}.zip" color-value*
+          zip -q -r "ethos-color-value-${{ env.GIT_VER }}.zip" color-value*
 
     - name: Create Release
       run: |
