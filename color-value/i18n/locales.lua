@@ -109,9 +109,9 @@ locales.infoPanelTitle = {
     en="Widget informations",
     fr="Informations sur le widget"
 }
-locales.infoPanelWidgetName = {
-    en="Widget name",
-    fr="Nom du widget"
+locales.infoPanelGitHubRepo = {
+    en="GitHub repository",
+    fr="Dépôt GitHub"
 }
 locales.infoPanelVersion = {
     en="Version",

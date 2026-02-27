@@ -1,6 +1,6 @@
 local scriptVersion = "1.0.1"
 local scriptAuthor = "github.com/flyingeek"
-local githubName = "ethos-color-value"
+local githubRepo = "ethos-color-value"
 local refreshRate = 1/10 -- 10Hz
 local defaultShowMinMax = true
 local WIDGET_TYPE_SOURCE = 1
@@ -19,6 +19,8 @@ local L = assert(loadfile("lib/init.luac", "b")({
 
 local __ = L.translate
 
+---this is the create method for the Color Value Widget
+---@return table
 local function createTypeSource()
      return {
         -- configure parameters (saved in storage)
@@ -36,15 +38,22 @@ local function createTypeSource()
         timestamp = 0 -- timestamp of last update per widget instance
      }
 end
+
+---this is the create method for the Telemetry Value Widget
+---@return table
 local function createTypeSensor()
     local data = createTypeSource()
     data.type = WIDGET_TYPE_SENSOR
     return data
 end
 
+---this is the name method of the Color Value widget
+---@return string
 local function nameTypeSource()
     return __("widgetNameTypeSourceASCII")
 end
+---this is the name method of the Telemetry Value widget
+---@return string
 local function nameTypeSensor()
     return __("widgetNameTypeSensorASCII")
 end
@@ -78,8 +87,8 @@ local function configure(widget)
     form.addBooleanField(line, nil, function() return widget.showTitle end, function(newValue) widget.showTitle = newValue end)
     local panel = form.addExpansionPanel(__("infoPanelTitle"))
     panel:open(false)
-    line = panel:addLine(__("infoPanelWidgetName"))
-    form.addStaticText(line, nil, githubName)
+    line = panel:addLine(__("infoPanelGitHubRepo"))
+    form.addStaticText(line, nil, githubRepo)
     line = panel:addLine(__("infoPanelVersion"))
     form.addStaticText(line, nil, scriptVersion)
     line = panel:addLine(__("infoPanelAuthor"))
@@ -127,6 +136,7 @@ local function paint(widget)
     --
     -- The code below has a valid widget.source
     --
+
     -- Source Value output
     -- find and set best font size for the widget's size
     local valueWidth, valueHeight = L.bestFit(widget.source:stringValue(), {FONT_XXL, FONT_XL, FONT_STD}, w - (margin * 2))
