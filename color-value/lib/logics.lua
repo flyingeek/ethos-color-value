@@ -97,7 +97,7 @@ end
 function LogicCases:__tostring()
     local out = "{"
     for k, logicCase in pairs(self.logicCases) do
-        out = "\n" .. out .. logicCase
+        out = "\n" .. out .. tostring(logicCase)
     end
     if #(self.logicCases) > 0 then  out = out .. "\n" end
     out = out .."}"
