@@ -1,7 +1,7 @@
-# 1.0.1
+# 1.0.2
 
-- fix a bug in the contextual menu where minimum and maximum values were wrong
-- ethos >= 1.7 will allow accentuated characters in widget name, menus and choices
+- fix the size of the color picker on smaller screens
+- allows the use of FONT_XS for minimum/maximum if widget width < 256px
 
 ## Download
 
