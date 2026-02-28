@@ -160,7 +160,8 @@ local function paint(widget)
         -- we want minValueY + minValueHeight < valueY and we consider minValueHeight == maxValueHeight
         local maxHeight = (valueY/2) - ((3 * margin)/4)
         -- find and set best font size for the widget's size
-        local minValueWidth, minValueHeight = L.bestOverlap(formattedMinValue, {FONT_STD, FONT_S}, (w - valueWidth)/2 , maxHeight, "0")
+        local allowedSize = w < 256 and {FONT_STD, FONT_S, FONT_XS} or {FONT_STD, FONT_S}
+        local minValueWidth, minValueHeight = L.bestOverlap(formattedMinValue, allowedSize, (w - valueWidth)/2 , maxHeight, "0")
         local maxValueWidth, maxValueHeight = lcd.getTextSize(L.isUTF8Compatible and formattedMaxValue or L.replaceUTF8(formattedMaxValue, "0"))
         local minValueY = maxValueY + maxValueHeight + (margin/2)
         lcd.color(defaultColor)
