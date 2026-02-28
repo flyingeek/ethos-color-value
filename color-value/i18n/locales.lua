@@ -66,7 +66,7 @@ locales.helpMessage = { -- \z must be at the end of each line except the last on
         Le widget affiche la valeur de la source en utilisant la couleur par défaut du thème. \z
         Vous pouvez définir jusqu'à 5 seuils, chacun ayant sa propre couleur. L'ordre des \z
         seuils compte : seul le premier cas valide est appliqué. \z
-        La condition valide actuelle est en surbrillance.\n\n\z
+        La condition valide actuelle est en surbrillance.\n\z
         Si la source est un capteur, en cas de perte de télémétrie, la couleur d'avertissement du thème est utilisée.",
 }
 locales.logicPanel = {
@@ -80,6 +80,14 @@ locales.showTitle = {
 locales.showMinMax = {
     en = "Minimum and Maximum",
     fr = "Minimum et Maximum",
+}
+locales.editMenuASCII = { -- no accentuated characters here for ethos < 1.7 compatibility
+    en = "Edit %s",
+    fr = "Editer %s",
+}
+locales.editMenuUTF8 = { -- utf8 version
+    en = "Edit %s",
+    fr = "Editer %s",
 }
 locales.resetMenuASCII = { -- no accentuated characters here for ethos < 1.7 compatibility
     en = "Reset %s",

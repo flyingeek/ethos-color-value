@@ -215,6 +215,20 @@ local function menu(widget)
             end
         end
         if L.isSensor(widget.source) or L.isTimer(widget.source) then
+            local openPageParameters
+            if tonumber(ethosVersion.major .. ethosVersion.minor) >= 26 then
+                if L.isTimer(widget.source) then
+                    openPageParameters = {timer=widget.source:member()}
+                elseif L.isSensor(widget.source) then
+                    openPageParameters = {sensor=widget.source:member()}
+                end
+                if openPageParameters then
+                    table.insert(menuData,{
+                        string.format(__("editMenuASCII"), widget.source:name()),
+                        function() system.openPage(openPageParameters) end
+                    })
+                end
+            end
             table.insert(menuData,{
                 string.format(__("resetMenuASCII"), widget.source:name()),
                 function() widget.source:reset() widget.value = nil end
