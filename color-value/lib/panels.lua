@@ -15,6 +15,10 @@ local function fillLogicPanel(panel, widget)
     local count = widget.logics:count()
     local dialogWidth = math.floor(lcd.getWindowSize() * 0.9)
     local confirmDialogWidth = math.floor(math.min(400, lcd.getWindowSize() * 0.8))
+    local lcdWidth = system.getVersion().lcdWidth
+    local colorWidth = 70
+    if lcdWidth <= 480 then colorWidth = 50
+    elseif lcdWidth <= 640 then colorWidth = 64 end
     panel:clear()
     -- the conditionLabel "If sourcename" is shared with all logic case
     local conditionLabel = L.sourceExists(widget.source) and widget.source:name() or ""
@@ -52,7 +56,7 @@ local function fillLogicPanel(panel, widget)
             }
         )
         -- now we can use the auto positionning for the operator, the threshold and the color
-        slots = form.getFieldSlots(line, {90, 0, 70})
+        slots = form.getFieldSlots(line, {90, 0, colorWidth})
         form.addChoiceField(line, slots[1], choices,
             function() return widget.logics:get(i).ope end,
             function(newValue) widget.logics:get(i).ope = newValue return highlightValidCase() end
