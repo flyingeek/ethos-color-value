@@ -9,7 +9,7 @@ You can download the zip file in the Assets section below.
 
 ## Install
 
-The recommended way to install is to use Ethos Studio
+The recommended way to install is to use Ethos Studio. The Ethos version on the radio must be ≥ 1.6.3
 
 ![Zight 2026-02-20 at 12 49 03 PM](https://github.com/user-attachments/assets/5aa6464a-381f-47f9-b7d7-0009da9111b5)
 
