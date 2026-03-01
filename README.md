@@ -1,4 +1,4 @@
-# Color Value : Lua Ethos Widget
+# Color Value : Lua Ethos Widget [[download]](https://github.com/flyingeek/ethos-color-value/releases/latest)
 
 ## Features
 
@@ -6,9 +6,11 @@
 - Adapts to many widget sizes
 - Dark and Light themes supported
 - Up to 5 configurable thresholds, each with his own color
-- Telemetry values may display the minimum and the output inside the widget or using the contextual menu
+- Telemetry values may display min/max inside the widget or using the contextual menu
 - Works fine with timers too
 - International language support (french/english)
+
+Note : Ethos ≥ 1.6.3 required
 
 ## ScreenShots
 
@@ -31,4 +33,4 @@
 
 When you install this file, it will install two widgets: **Color Value** and **Color Telemetry**. Both share the same code, the difference is that the **Color Telemetry** limits the source to be a sensor.
 
-To install, go to the [latest release page](https://github.com/flyingeek/ethos-color-value/releases/latest) and follow the instructions.
+To install or download, go to the [latest release page](https://github.com/flyingeek/ethos-color-value/releases/latest) and follow the instructions.
