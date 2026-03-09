@@ -1,12 +1,70 @@
 ---@diagnostic disable-next-line: undefined-global
 local L = L
 local __ = L.translate
-
-local function fillLogicPanel(panel, widget)
+local function positionLabel(line, x, label, color)
+    local slots = form.getFieldSlots(line, {label, 0})
+    if x == nil then x = slots[1].x - slots[1].w - 10 end
+    local rect = slots[1]
+    rect.x = x
+    local field = form.addStaticText(line , rect, label)
+    if color then field:color(color) end
+    return field, rect
+end
+local function fillLogicPanel(panel, widget, grabFocus)
+    local grayColor = lcd.themeColor(14)
+    local lcdWidth = system.getVersion().lcdWidth
     if panel == nil then return end
+    if grabFocus == nil then grabFocus = true end
+
+    local function appendTag(index, tag)
+        if index==0 then
+            widget.title = widget.title .. " " ..tag
+            fillLogicPanel(panel, widget)
+        else
+            local logic = widget.logics:get(index)
+            if logic then
+                logic:appendText(" " .. tag)
+                fillLogicPanel(panel, widget)
+            end
+        end
+    end
+    local function buildTagButtons(i)
+        local buttons = {}
+        if lcdWidth >= 800 then
+            table.insert(buttons,
+                {label=" _b ", action=function() appendTag(i, "_b") return true end}
+            )
+        end
+        if widget.source.decimals and widget.source:decimals() then
+            local k = 0
+            local precision = widget.source:decimals()
+            local j = precision
+            while k < 2 and j >= 0 do
+                local tag = "_"..tostring(j).."v"
+                if j ~= precision then
+                    table.insert(buttons,
+                        {label=string.format("%."..tostring(j).."f", widget.source:value() or 0, widget.source), action=function() appendTag(i, tag) return true end}
+                    )
+                else
+                    table.insert(buttons,
+                        {label=string.format("%."..tostring(j).."f", widget.source:value() or 0, widget.source), action=function() appendTag(i, "_v") return true end}
+                    )
+                end
+                k = k + 1
+                j = j - 1
+            end
+        end
+        local stringValue = widget.source:stringValue() == "---" and L.formatWithDecimals(0, widget.source)..widget.source:stringUnit() or widget.source:stringValue()
+        table.insert(buttons, {label=stringValue:sub(1, 10), action=function() appendTag(i, "_t") return true end})
+        table.insert(buttons, {label=widget.source:name(), action=function() appendTag(i, "_n") return true end})
+        table.insert(buttons, {label=__("ok"), action=function() return true end})
+        return buttons
+    end
+    local tagButtonText = "  ...  "
     local choices = {
         {L.isUTF8Compatible and " ≤ " or " <= ", L.OPE_LESS_OR_EQUAL},
         {" < ", L.OPE_LESS},
+        {" = ", L.OPE_EQUAL},
         {" > ", L.OPE_MORE},
         {L.isUTF8Compatible and " ≥ " or" >= ", L.OPE_MORE_OR_EQUAL}}
     local maxConditions = 5
@@ -15,10 +73,10 @@ local function fillLogicPanel(panel, widget)
     local count = widget.logics:count()
     local dialogWidth = math.floor(lcd.getWindowSize() * 0.9)
     local confirmDialogWidth = math.floor(math.min(400, lcd.getWindowSize() * 0.8))
-    local lcdWidth = system.getVersion().lcdWidth
-    local colorWidth = 70
-    if lcdWidth <= 480 then colorWidth = 50
-    elseif lcdWidth <= 640 then colorWidth = 64 end
+    local colorWidth = 71
+    local choiceWidth = 90
+    if lcdWidth <= 480 then colorWidth = 50 choiceWidth = 60
+    elseif lcdWidth <= 640 then colorWidth = 64 choiceWidth = 80 end
     panel:clear()
     -- the conditionLabel "If sourcename" is shared with all logic case
     local conditionLabel = L.sourceExists(widget.source) and widget.source:name() or ""
@@ -26,49 +84,134 @@ local function fillLogicPanel(panel, widget)
     local caseTexts = {} -- a list of all the "Case%d" staticTextField
     -- hightlight or normalizes all the case based on the logic conditions
     local function highlightValidCase()
-        local defaultColor = lcd.themeColor(14)
+        local defaultColor = grayColor
         local highlightColor = lcd.darkMode() and lcd.themeColor(THEME_DEFAULT_COLOR) or lcd.color(BLACK)
         local match = widget.logics:matchIndex(widget.value)
         for j, staticText in pairs(caseTexts) do
             staticText:color(j == match and highlightColor or defaultColor)
         end
     end
-    for i=1,widget.logics:count() do
-        line = panel:addLine("", i == count and count >= maxConditions)
+    if widget.showTitle and widget.useState then
+        line = panel:addLine(__("title"))
+        slots = form.getFieldSlots(line, {0, tagButtonText})
+        form.addTextField(line, slots[1],
+            function() return widget.title end,
+            function(newValue) widget.title = newValue end)
+        form.addButton(line, slots[2],
+        { -- tag dialog
+            text=tagButtonText,
+            paint=function() end,
+            press=function()
+                return form.openDialog({
+                    title=__("helpTagsTitle"),
+                    message=__("helpTags"),
+                    width=dialogWidth,
+                    buttons=buildTagButtons(0),
+                    options=TEXT_LEFT,
+                    closeWhenClickOutside=true
+                })
+            end
+        })
+    end
+    if widget.useBackgroung and count > 0 then
+        -- adds a line to indicate which color is which
+        local explanation = __("colorHint")
+        line = panel: addLine("", false)
+        slots = form.getFieldSlots(line, {0, explanation})
+        form.addStaticText(line , slots[2], explanation):color(grayColor)
+    end
+    local choiceField -- the last choice
+    local textField -- the last textField
+    for i=1,count do
+        line = panel:addLine("", i == count and count >= maxConditions and not(widget.useBackgroung or widget.useState))
         -- "Case%d" at the beginning of the line as a staticText to be able to colorize it
-        local caseLabel = string.format(__("case"), i)
-        slots = form.getFieldSlots(line, {caseLabel, 0})
-        caseTexts[i] = form.addStaticText(line , {x=0, y=slots[1].y, w=slots[1].w, h=slots[1].h}, caseLabel)
+        caseTexts[i] = positionLabel(line, 0, string.format(__("case"), i))
         -- "If sourceName" at left of FieldSlots
-        slots = form.getFieldSlots(line, {conditionLabel, 0})
-        local conditionLabelWidth = slots[1].w
-        form.addStaticText(line , {x=slots[1].x - conditionLabelWidth - 10, y=slots[1].y, w=conditionLabelWidth, h=slots[1].h}, conditionLabel)
-        -- "DELETE" at left of "If sourceName" is wrapped in a confirm dialog
+        local _, rect = positionLabel(line, nil, conditionLabel)
+       -- "DELETE" at left of "If sourceName" is wrapped in a confirm dialog
         form.addButton(line,
-            {x=slots[1].x - conditionLabelWidth - 10 - 50 - 10, y=slots[1].y, w=50, h=slots[1].h}, -- rect
+            {x=rect.x - 50 - 10, y=rect.y, w=50, h=rect.h},
             {
                 icon=L.deleteIcon,
                 press=L.confirm(
-                    function() widget.logics:remove(i) model.dirty() return fillLogicPanel(panel, widget) end,
+                    function() widget.logics:remove(i) model.dirty() fillLogicPanel(panel, widget) end,
                     string.format(__("caseDeleteMessage"), i),
                     confirmDialogWidth
                 )
             }
         )
-        -- now we can use the auto positionning for the operator, the threshold and the color
-        slots = form.getFieldSlots(line, {90, 0, colorWidth})
-        form.addChoiceField(line, slots[1], choices,
+        if widget.useBackgroung and lcdWidth >= 800 then
+            slots = form.getFieldSlots(line, {choiceWidth, 0, colorWidth, colorWidth})
+        elseif widget.useBackgroung then
+            slots = form.getFieldSlots(line, {choiceWidth, 0})
+        else
+            slots = form.getFieldSlots(line, {choiceWidth, 0, colorWidth})
+        end
+        choiceField = form.addChoiceField(line, slots[1], choices,
             function() return widget.logics:get(i).ope end,
             function(newValue) widget.logics:get(i).ope = newValue return highlightValidCase() end
-        ):focus()
+        )
+
         local factoredField = L.addFactoredNumberField(line, slots[2], 0, 0, -- no need to care about min and max here
             function() return widget.logics:get(i).threshold end,
             function(newValue) widget.logics:get(i).threshold = newValue return highlightValidCase() end
         )
         factoredField.updateFromSource(widget.source)
-        form.addColorField(line, slots[3],
-            function() return widget.logics:get(i).color end,
-            function(newValue) widget.logics:get(i).color = newValue end)
+
+        if widget.useBackgroung and lcdWidth >= 800 then
+            -- large screen both colors on condiftion line
+            form.addColorField(line, slots[3],
+                function() return widget.logics:get(i).color end,
+                function(newValue) widget.logics:get(i).color = newValue end)
+            form.addColorField(line, slots[4],
+                function() return widget.logics:get(i).bgcolor or lcd.themeColor(THEME_DEFAULT_BGCOLOR) end,
+                function(newValue) widget.logics:get(i).bgcolor = newValue end)
+        elseif widget.useBackgroung then
+            -- small screen both colors on new line
+            line = panel:addLine("", i == count and count >= maxConditions and not widget.useState)
+            slots = form.getFieldSlots(line, {0, 0})
+            form.addColorField(line, slots[1],
+                function() return widget.logics:get(i).color end,
+                function(newValue) widget.logics:get(i).color = newValue end)
+            form.addColorField(line, slots[2],
+                function() return widget.logics:get(i).bgcolor end,
+                function(newValue) widget.logics:get(i).bgcolor = newValue end)
+        else
+            -- single color (no background color)
+            form.addColorField(line, slots[3],
+                function() return widget.logics:get(i).color end,
+                function(newValue) widget.logics:get(i).color = newValue end)
+        end
+        if widget.useState then
+            line = panel:addLine("", i == count and count >= maxConditions)
+            positionLabel(line, nil, __("state"), grayColor)
+            slots = form.getFieldSlots(line, {0, tagButtonText})
+            textField = form.addTextField(line, slots[1],
+                function() return widget.logics:get(i).text end,
+                function(newValue) widget.logics:get(i).text = newValue end)
+            form.addButton(line, slots[2],
+            { -- tag dialog
+                text=tagButtonText,
+                paint=function() end,
+                press=function()
+                    return form.openDialog({
+                        title=__("helpTagsTitle"),
+                        message=__("helpTags"),
+                        width=dialogWidth,
+                        buttons=buildTagButtons(i),
+                        options=TEXT_LEFT,
+                        closeWhenClickOutside=true
+                    })
+                end
+            }
+        )
+        end
+    end
+    if grabFocus and textField then
+        textField:focus()
+    elseif grabFocus and choiceField then
+        choiceField:focus()
+
     end
     highlightValidCase()
     if count < maxConditions and widget.source ~= nil and widget.source:name()~="---" then
@@ -95,9 +238,9 @@ local function fillLogicPanel(panel, widget)
         -- auto positionned Add button
         local addButton = form.addButton(line, nil, {
             text="+",
-            press=function() widget.logics:add() model.dirty() return fillLogicPanel(panel, widget) end
+            press=function() widget.logics:add() model.dirty() fillLogicPanel(panel, widget) end
         })
-        if count == 0 then
+        if count == 0 and grabFocus then
             addButton:focus()
         end
     end

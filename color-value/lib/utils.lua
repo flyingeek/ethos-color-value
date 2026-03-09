@@ -21,22 +21,38 @@ local function replaceUTF8(text, altChar)
 end
 
 -- set the font to fit text into a box (fit maxWidth and fit maxHeight) maxWidth or maxHeight may be nil
-local function bestFit(str, fontIndexList, maxWidth, maxHeight, altChar)
-    local text = str
-    if not isUTF8Compatible then
-        text = replaceUTF8(str, altChar)
-    end
-    local tw, th
+local function bestFit(strOrTable, fontIndexList, maxWidth, maxHeight, altChar)
+    local boxW, boxH, bestFont, lineH
     local overflow = true
+    local lines
+    if type(strOrTable) == "string" then
+        lines = {strOrTable}
+    else
+        lines = strOrTable
+    end
+
     for _, font in pairs(fontIndexList) do
+        boxW = 0
+        boxH = 0
+        lineH = 0
+        overflow = true
         lcd.font(font)
-        tw, th = lcd.getTextSize(text)
-        if (maxWidth == nil or (maxWidth and tw <= maxWidth)) and (maxHeight == nil or (maxHeight and th <= maxHeight)) then
+        bestFont = font
+        for _, line in pairs(lines) do
+            if not isUTF8Compatible then
+                line = replaceUTF8(line, altChar)
+            end
+            local w, h = lcd.getTextSize(line)
+            boxW = math.max(boxW, w)
+            boxH = boxH + h
+            lineH = math.max(lineH, h)
+        end
+        if (maxWidth == nil or (maxWidth and boxW <= maxWidth)) and (maxHeight == nil or (maxHeight and boxH <= maxHeight)) then
             overflow = false
             break
         end
     end
-    return tw, th, overflow
+    return boxW, boxH, lineH, bestFont, overflow
 end
 
 -- set the font for the best overlap (fit maxWidth OR fit maxHeight)
@@ -45,24 +61,27 @@ local function bestOverlap(str, fontList, maxWidth, maxHeight, altChar)
     if not isUTF8Compatible then
         text = replaceUTF8(str, altChar)
     end
-    local tw, th
+    local tw, th, bestFont
     local overflow = true
     for _, font in pairs(fontList) do
         lcd.font(font)
+        bestFont = font
         tw, th = lcd.getTextSize(text)
         if th < maxHeight or tw < maxWidth then
             overflow = false
             break
         end
     end
-    return tw, th, overflow
+    return tw, th, bestFont, overflow
 end
 
 local function formatWithDecimals(value, source)
-    if not value then return "" end
-    return string.format("%.0" .. (source:decimals() or defaultSourcePrecision) .. "f", value)
+    return string.format("%.0" .. (source:decimals() or defaultSourcePrecision) .. "f", value or 0)
 end
-
+local function trim (s)
+    if not s then return "" end
+    return tostring(s):gsub("^%s*(.-)%s*$", "%1")
+end
 --- wraps in a confirm dialog, accept fn of a text button or options of a button
 ---@param fn (function)
 ---@return any
@@ -94,6 +113,16 @@ for i=0,24, 1 do
 end
  ]]
 
+local ANSI_BLACK = "\27[1;30m"
+local ANSI_RED = "\27[1;31m"
+local ANSI_GREEN = "\27[1;32m"
+local ANSI_YELLOW = "\27[1;33m"
+local ANSI_CYAN = "\27[0;36m"
+local function log(text, ansiColor)
+    if not ansiColor then ansiColor = ANSI_CYAN end -- black is unreadable on ethos.studio1247.com
+    local ANSI_RESET = "\27[0m"
+    print(ansiColor..tostring(text)..ANSI_RESET)
+end
 return {
     isSensor=isSensor,
     isTimer=isTimer,
@@ -102,5 +131,10 @@ return {
     bestFit=bestFit,
     bestOverlap=bestOverlap,
     formatWithDecimals=formatWithDecimals,
-    confirm = confirm
+    confirm = confirm,
+    trim = trim,
+    log=log,
+    ANSI_RED=ANSI_RED,
+    ANSI_GREEN=ANSI_GREEN,
+    ANSI_YELLOW=ANSI_YELLOW,
 }

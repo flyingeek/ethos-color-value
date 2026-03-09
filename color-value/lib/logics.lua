@@ -1,19 +1,88 @@
 ---@diagnostic disable-next-line: undefined-global
 local isTimer = L.isTimer
+---@diagnostic disable-next-line: undefined-global
+local sourceExists = L.sourceExists
+---@diagnostic disable-next-line: undefined-global
+local trim = L.trim
+---@diagnostic disable-next-line: undefined-global
+local formatWithDecimals = L.formatWithDecimals
 
 local defaultThreshold = 0
 
 local OPE_NONE = 0
-local OPE_LESS_OR_EQUAL = 20
 local OPE_LESS = 5
 local OPE_MORE = 10
 local OPE_MORE_OR_EQUAL = 15
+local OPE_LESS_OR_EQUAL = 20
+local OPE_EQUAL = 25
 local epsilon = 1e-6
+
+local function encode(s)
+    if not s then return "" end
+    -- replace any "\x" by \ddd (as \x should not be in user input)
+    local encoded = s:gsub("\\(.)", function(x)
+        return string.format("\\%03d", string.byte(x))
+    end)
+    -- replace any "," or "/" by their char as they are separator
+    encoded = encoded:gsub("([,/])", function(x)
+            return string.format("\\%03d", string.byte(x))
+        end)
+    return encoded
+end
+local function decode (s)
+    if not s then return "" end
+    -- replace any \ddd by char(d)
+    local decoded = s:gsub("\\(%d%d%d)", function (d)
+        return string.char(d)
+    end)
+    return decoded
+end
+local function escape(s)
+    -- a safe string to store
+    return encode(decode(s))
+end
+
+local function parseTags(text, source)
+    local function replaceTag(s)
+        local formatted = s
+        if sourceExists(source) then
+            -- replace _0v _1v ..._9v
+            formatted = formatted:gsub("_(%d)v",
+                        function(digit)
+                            local n = tonumber(digit) or 0
+                            local format = string.format("%%.%df", n)
+                            return string.format(format, tonumber(source:value()) or 0)
+                        end)
+            -- replace _v
+            formatted = formatted:gsub("_v", tostring(formatWithDecimals(source:value(), source)))
+            -- replace _t
+            formatted = formatted:gsub("_t", tostring(source:stringValue()))
+            -- replace _n
+            formatted = formatted:gsub("_n", tostring(source:name()))
+        end
+        return formatted
+    end
+    if not text then return {""} end
+    if not text:find('_') then return {text} end
+
+    -- replace __ by encoded \095
+    local encoded = text:gsub("_(_)", function(x)
+            return string.format("\\%03d", string.byte(x))
+        end)
+    local lines = {}
+    local sep = "_b"
+    for line in string.gmatch(encoded..sep, "(.-)"..sep) do
+        table.insert(lines, decode(replaceTag(line)))
+    end
+    return lines
+end
 
 local LogicCase = {
     threshold=defaultThreshold,
     ope=OPE_LESS,
-    color=lcd.themeColor(THEME_WARNING_COLOR)
+    color=lcd.themeColor(THEME_WARNING_COLOR),
+    bgcolor=lcd.themeColor(THEME_DEFAULT_BGCOLOR),
+    text=""
 }
 function LogicCase:new (o)
     o = o or {}
@@ -23,36 +92,49 @@ function LogicCase:new (o)
 end
 function LogicCase:test(value)
     if value then
-        if self.ope == OPE_NONE then return false end
-        if self.ope == OPE_LESS then return value < self.threshold end
-        if self.ope == OPE_MORE then return value > self.threshold end
-        if self.ope == OPE_LESS_OR_EQUAL then return (value <= self.threshold or math.abs(value - self.threshold) <= epsilon) end
-        if self.ope == OPE_MORE_OR_EQUAL then return (value >= self.threshold or math.abs(value - self.threshold) <= epsilon) end
-        warn("unknown OPE code "..self.ope)
+        if self.ope == OPE_NONE then return false
+        elseif self.ope == OPE_LESS then return value < self.threshold
+        elseif self.ope == OPE_MORE then return value > self.threshold
+        elseif self.ope == OPE_LESS_OR_EQUAL then return (value <= self.threshold or math.abs(value - self.threshold) <= epsilon)
+        elseif self.ope == OPE_MORE_OR_EQUAL then return (value >= self.threshold or math.abs(value - self.threshold) <= epsilon)
+        elseif self.ope == OPE_EQUAL then return math.abs(value - self.threshold) <= epsilon
+        else
+            warn("unknown OPE code "..self.ope)
+        end
     else
         warn("LogicCase:test Attempt to test a nil value")
     end
     return false
 end
 function LogicCase:__tostring()
-    return string.format("LogicCase: ope=%s, threshold=%s, color=%s", self.ope, self.threshold, self.color)
+    return string.format("LogicCase: ope=%s, threshold=%s, color=%s bgcolor=%s text=%s", self.ope, self.threshold, self.color, self.bgcolor, self.text)
 end
 function LogicCase:asStorageString()
-    return string.format("%s,%s,%s", self.ope, self.threshold, self.color)
+    return string.format("%s,%s,%s,%s,%s", self.ope, self.threshold, self.color, self.bgcolor, escape(trim(self.text)))
 end
 function LogicCase:loadStorageString(s)
     local t = {}
     for m in string.gmatch(s, "([^,]+)") do
         table.insert(t, m)
     end
-    if #t ~= 3 then
+    if #t ~= 5 then
         warn("LogicCase:loadString bad format "..s)
-    else
-        self.ope = tonumber(t[1])
-        self.threshold = tonumber(t[2])
-        self.color = tonumber(t[3])
     end
+    if t[1] ~= nil then self.ope = tonumber(t[1]) end
+    if t[2] ~= nil then self.threshold = tonumber(t[2]) end
+    if t[3] ~= nil then self.color = tonumber(t[3]) end
+    if t[4] ~= nil then self.bgcolor = tonumber(t[4]) end
+    if t[5] ~= nil then self.text = decode(t[5]) end
+
     return self
+end
+function LogicCase:getText(source)
+    return parseTags(self.text, source)
+end
+function LogicCase:appendText(s)
+    if s then
+        self.text = self.text .. tostring(s)
+    end
 end
 
 local LogicCases = {}
@@ -154,5 +236,7 @@ return {
     ["OPE_LESS"] = OPE_LESS,
     ["OPE_MORE"] = OPE_MORE,
     ["OPE_MORE_OR_EQUAL"] = OPE_MORE_OR_EQUAL,
-    LogicCases = LogicCases
+    ["OPE_EQUAL"] = OPE_EQUAL,
+    LogicCases = LogicCases,
+    parseTags = parseTags,
 }

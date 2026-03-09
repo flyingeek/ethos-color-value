@@ -7,8 +7,12 @@ for k,v in pairs(libVars) do
     ns[k] = v
 end
 
-system.compile("i18n/locales.lua")
-ns.translate=assert(loadfile("i18n/locales.luac", "b"))(ns.isUTF8Compatible).translate
+system.compile("i18n/i18n.lua")
+local i18n = assert(loadfile("i18n/i18n.luac", "b"))(ns.isUTF8Compatible)
+ns.translate = i18n.translate
+ns.getLocale = i18n.getLocale
+ns.changeLocale = i18n.changeLocale
+i18n = nil
 
 local libEnv = {[name] = ns}
 setmetatable(libEnv, {__index = _G})
