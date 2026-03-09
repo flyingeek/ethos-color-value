@@ -181,7 +181,7 @@ local function paint(widget)
         lcd.font(FONT_S)
         lcd.color(titleColor)
         local titles = {widget.source and widget.source:name() or "---"}
-        if widget.useState and widget.title ~= "" then
+        if widget.useState and widget.title ~= "" and matchingCase then
             titles = L.parseTags(widget.title, widget.source)
         end
         for _, line in pairs(titles) do
