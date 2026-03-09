@@ -1,7 +1,19 @@
-# 1.0.2
+# 1.1.0-rc1
 
-- fix the size of the color picker on smaller screens
-- allows the use of FONT_XS for minimum/maximum if widget width < 256px
+This is a pre-release version, it should be use only by translators and people willing to test and report.
+
+Although I added many features, the UI can stay very minimmalist, as before.
+
+New features:
+
+- min/max values are shown in the menu only when not displayed in the widget
+- possibility to set both text and background color
+- possibility to use custom states
+- custom states allow the use of special tags to insert source name or source value.
+- when using tags, it is possible to use multiple lines
+- title might also be modified when using custom states
+
+Example of widget outputs:
 
 ## Download
 
