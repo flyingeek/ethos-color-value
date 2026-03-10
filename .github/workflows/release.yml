@@ -19,7 +19,7 @@ jobs:
       run: |
         GIT_VER=${GITHUB_REF##*/}
         GIT_TAG=${GITHUB_REF##refs/tags/}
-        if [[ ${GIT_VER} =~ ^[0-9]+[.][0-9]+[.][0-9]+[-][A-Za-z0-9]+ ]]
+        if [[ ${GIT_VER} =~ ^[0-9]+[.][0-9]+[.][0-9]+[-][A-Za-z0-9.-]+ ]]
         then
           GH_TYPE='Release Candidate'
         else
