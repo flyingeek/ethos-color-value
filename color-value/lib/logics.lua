@@ -60,6 +60,11 @@ local function parseTags(text, source)
                             :gsub("_v", tostring(formatWithDecimals(source:value(), source))) -- replace _v
                             :gsub("_t", escapePattern(source:stringValue())) -- replace _t
                             :gsub("_n", escapePattern(source:name()))  -- replace _n
+                            :gsub("_u", escapePattern(source:stringUnit() or ""))  -- replace _u
+                            :gsub("_1(0+)v", -- replace _10v _100v ...
+                                function(multiplier)
+                                    return tostring(math.floor(0.5 + (tonumber(source:value()) or 0) * tonumber("1"..multiplier)))
+                                end)
                         )
         end
         return formatted
