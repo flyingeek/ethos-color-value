@@ -42,23 +42,25 @@ local function escape(s)
     return encode(decode(s))
 end
 
+local function escapePattern(pattern)
+    local escaped = select(1, string.gsub(pattern, "[^%w]", function(x) return string.format("\\%03d", string.byte(x)) end))
+    return escaped
+end
+
 local function parseTags(text, source)
     local function replaceTag(s)
         local formatted = s
         if sourceExists(source) then
-            -- replace _0v _1v ..._9v
-            formatted = formatted:gsub("_(%d)v",
-                        function(digit)
-                            local n = tonumber(digit) or 0
-                            local format = string.format("%%.%df", n)
-                            return string.format(format, tonumber(source:value()) or 0)
-                        end)
-            -- replace _v
-            formatted = formatted:gsub("_v", tostring(formatWithDecimals(source:value(), source)))
-            -- replace _t
-            formatted = formatted:gsub("_t", tostring(source:stringValue()))
-            -- replace _n
-            formatted = formatted:gsub("_n", tostring(source:name()))
+            formatted = (formatted:gsub("_(%d)v", -- replace _0v _1v ..._9v
+                                function(digit)
+                                    local n = tonumber(digit) or 0
+                                    local format = string.format("%%.%df", n)
+                                    return string.format(format, tonumber(source:value()) or 0)
+                                end)
+                            :gsub("_v", tostring(formatWithDecimals(source:value(), source))) -- replace _v
+                            :gsub("_t", escapePattern(source:stringValue())) -- replace _t
+                            :gsub("_n", escapePattern(source:name()))  -- replace _n
+                        )
         end
         return formatted
     end
