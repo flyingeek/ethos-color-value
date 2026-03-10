@@ -37,9 +37,6 @@ local function addFactoredNumberField(line, rect, min, max, getValue, setValue)
             if category == CATEGORY_TIMER then
                 defaultSuffix = "s"
             end
-            if category == CATEGORY_ANALOG or category == CATEGORY_CHANNEL then
-                defaultSuffix = "%"
-            end
             local precision = source.decimals and source:decimals() or defaultSourcePrecision
             field:decimals(precision)
             field:suffix(source:stringUnit() ~="" and (" " .. source:stringUnit()) or defaultSuffix)
