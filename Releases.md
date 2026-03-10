@@ -1,8 +1,16 @@
-# 1.1.0-rc1
+# 1.1.0-rc2
 
 This is a pre-release version, it should be use only by translators and people willing to test and report.
 
 Although I added many features, the UI can stay very minimmalist, as before.
+
+Changed from RC1:
+
+- german translation added
+- the title is only changed in case of a match
+- Title moved below the cases due to the preceding change
+- help reflow patch to avoid the ethos issue
+- for translators, title label is changed and 4th paragraphe of the help message is changed (english inserted in translations)
 
 New features:
 
@@ -14,6 +22,7 @@ New features:
 - title might also be modified when using custom states
 
 Example of widget outputs:
+![go crazy example](https://github.com/user-attachments/assets/5aa6464a-381f-47f9-b7d7-0009da9111b5)
 
 ## Download
 
