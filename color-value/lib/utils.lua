@@ -5,6 +5,17 @@ local isUTF8Compatible = L.isUTF8Compatible
 ---@diagnostic disable-next-line: undefined-global
 local __ = L.translate
 
+local ANSI_BLACK = "\27[1;30m"
+local ANSI_RED = "\27[1;31m"
+local ANSI_GREEN = "\27[1;32m"
+local ANSI_YELLOW = "\27[1;33m"
+local ANSI_CYAN = "\27[0;36m"
+local function log(text, ansiColor)
+    if not ansiColor then ansiColor = ANSI_CYAN end -- black is unreadable on ethos.studio1247.com
+    local ANSI_RESET = "\27[0m"
+    print(ansiColor.."[cv]"..tostring(text)..ANSI_RESET)
+end
+
 local function isSensor(source)
     return source and source:category() == CATEGORY_TELEMETRY_SENSOR
 end
@@ -113,16 +124,26 @@ for i=0,24, 1 do
 end
  ]]
 
-local ANSI_BLACK = "\27[1;30m"
-local ANSI_RED = "\27[1;31m"
-local ANSI_GREEN = "\27[1;32m"
-local ANSI_YELLOW = "\27[1;33m"
-local ANSI_CYAN = "\27[0;36m"
-local function log(text, ansiColor)
-    if not ansiColor then ansiColor = ANSI_CYAN end -- black is unreadable on ethos.studio1247.com
-    local ANSI_RESET = "\27[0m"
-    print(ansiColor..tostring(text)..ANSI_RESET)
+local function wrap(str, limit, indent, indent1)
+    indent = indent or ""
+    indent1 = indent1 or indent
+    limit = limit or 72
+    local here = 1-#indent1
+    local function check(sp, st, word, fi)
+        if fi - here > limit then
+            here = st - #indent
+            return "\n"..indent..word
+        end
+    end
+    return indent1..str:gsub("(%s+)()(%S+)()", check)
 end
+local function reflow(str, limit, indent, indent1)
+    return (str:gsub("[^\n]+",
+                function(line)
+                    return wrap(line, limit, indent, indent1)
+                end))
+end
+
 return {
     isSensor=isSensor,
     isTimer=isTimer,
@@ -137,4 +158,5 @@ return {
     ANSI_RED=ANSI_RED,
     ANSI_GREEN=ANSI_GREEN,
     ANSI_YELLOW=ANSI_YELLOW,
+    reflow=reflow,
 }
