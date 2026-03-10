@@ -30,7 +30,7 @@ return {
     infoPanelGitHubRepo="GitHub repozitář",
     infoPanelVersion="Verze",
     infoPanelAuthor="Autor",
-    title="Název",
+    title="Název (in case of a match)",
     showBackgroundColor="Background Color",
     showCustomStates="Custom States",
     colorHint="Text color / Background Color",
@@ -51,7 +51,8 @@ return {
         If the widget has the focus, the focus color is applied.\n\n\z
         \z
         Custom States, when set, override the value with a custom text, \z
-        and special tags are available in the button next to the state field.\n\n\z
+        and special tags are available in the button next to the state field. \z
+        When state is empty, the default value is shown in the widget.\n\n\z
         \z
         For sensors, Minimum and Maximum can be displayed in the widget, otherwise \z
         those values will be shown in the widget's menu.\n\n\z",

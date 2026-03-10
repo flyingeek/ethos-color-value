@@ -30,7 +30,7 @@ return {
     infoPanelGitHubRepo="Dépôt GitHub",
     infoPanelVersion="Version",
     infoPanelAuthor="Auteur",
-    title="Titre",
+    title="Titre (si un cas est valide)",
     showBackgroundColor="Arrière plan",
     showCustomStates="Etats personnalisés",
     colorHint="Couleur Texte / Arrière plan",
@@ -52,8 +52,9 @@ return {
         Si le widget a le focus, la couleur du focus sera appliquée.\n\n\z
         \z
         Etat personnalisés, permet de remplacer la valeur de la source par un état que l'on définit, \z
-        les balises permettent en plus d'insérer des valeurs de la source. \z
-        Ces balises sont accessibles avec le bouton accolé au champ Etat.\n\n\z
+        si l'état est vide la valeur par défaut est affichée. \z
+        Les balises permettent en plus d'insérer des valeurs de la source, \z
+        elles sont accessibles via le bouton accolé au champ Etat.\n\n\z
         \z
         Pour les capteurs de télémétrie, les valeurs minimum et maximum peuvent s'afficher dans le widget, \z
         à défaut, vous retrouverez ces valeurs dans le menu du widget\n\n\z",

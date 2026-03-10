@@ -30,7 +30,7 @@ return {
     infoPanelGitHubRepo="GitHub-Repository",
     infoPanelVersion="Version",
     infoPanelAuthor="Autor",
-    title="Titel",
+    title="Titel (in case of a match)",
     showBackgroundColor="Hintergrundfarbe",
     showCustomStates="Benutzerdefinierte Zustände",
     colorHint="Textfarbe/Hintergrundfarbe",
@@ -51,7 +51,8 @@ return {
         Wenn das Widget den Fokus hat, wird die Fokusfarbe angewendet.\n\n\z
         \z
         Benutzerdefinierte Zustände überschreiben, sofern festgelegt, den Wert mit einem benutzerdefinierten Text,  \z
-        Spezielle Tags sind über die Schaltfläche neben dem Feld „Bundesland“ verfügbar.\n\n\z
+        Spezielle Tags sind über die Schaltfläche neben dem Feld „Bundesland“ verfügbar.\n\z
+        When state is empty, the default value is shown in the widget.\n\n\z
         \z
         Bei Sensoren können Minimum und Maximum im Widget angezeigt werden, andernfalls \z
         werden diese Werte im Menü des Widgets angezeigt.\n\n\z",
