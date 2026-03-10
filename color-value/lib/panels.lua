@@ -74,7 +74,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
     local dialogWidth = math.floor(lcd.getWindowSize() * 0.9)
     local confirmDialogWidth = math.floor(math.min(400, lcd.getWindowSize() * 0.8))
     local colorWidth = 71
-    local choiceWidth = 90
+    local choiceWidth = 95
     local maxDialogChars = 57
     if lcdWidth <= 480 then colorWidth = 50 choiceWidth = 60 maxDialogChars = 50
     elseif lcdWidth <= 640 then colorWidth = 64 choiceWidth = 80 maxDialogChars = 50 end
