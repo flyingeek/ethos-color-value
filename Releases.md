@@ -22,7 +22,7 @@ New features:
 - title might also be modified when using custom states
 
 Example of widget outputs:
-![go crazy example](https://github.com/user-attachments/assets/5aa6464a-381f-47f9-b7d7-0009da9111b5)
+![go-crazy-demo](https://github.com/user-attachments/assets/0fb564c0-a947-496a-a3c1-8823d7405dc8)
 
 ## Download
 
