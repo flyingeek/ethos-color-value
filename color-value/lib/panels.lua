@@ -92,28 +92,6 @@ local function fillLogicPanel(panel, widget, grabFocus)
             staticText:color(j == match and highlightColor or defaultColor)
         end
     end
-    if widget.showTitle and widget.useState then
-        line = panel:addLine(__("title"))
-        slots = form.getFieldSlots(line, {0, tagButtonText})
-        form.addTextField(line, slots[1],
-            function() return widget.title end,
-            function(newValue) widget.title = newValue end)
-        form.addButton(line, slots[2],
-        { -- tag dialog
-            text=tagButtonText,
-            paint=function() end,
-            press=function()
-                return form.openDialog({
-                    title=__("helpTagsTitle"),
-                    message=__("helpTags"),
-                    width=dialogWidth,
-                    buttons=buildTagButtons(0),
-                    options=TEXT_LEFT,
-                    closeWhenClickOutside=true
-                })
-            end
-        })
-    end
     if widget.useBackgroung and count > 0 then
         -- adds a line to indicate which color is which
         local explanation = __("colorHint")
@@ -244,6 +222,28 @@ local function fillLogicPanel(panel, widget, grabFocus)
         if count == 0 and grabFocus then
             addButton:focus()
         end
+    end
+    if widget.showTitle and widget.useState and count > 0 then
+        line = panel:addLine(__("title"))
+        slots = form.getFieldSlots(line, {0, tagButtonText})
+        form.addTextField(line, slots[1],
+            function() return widget.title end,
+            function(newValue) widget.title = newValue end)
+        form.addButton(line, slots[2],
+        { -- tag dialog
+            text=tagButtonText,
+            paint=function() end,
+            press=function()
+                return form.openDialog({
+                    title=__("helpTagsTitle"),
+                    message=__("helpTags"),
+                    width=dialogWidth,
+                    buttons=buildTagButtons(0),
+                    options=TEXT_LEFT,
+                    closeWhenClickOutside=true
+                })
+            end
+        })
     end
 end
 
