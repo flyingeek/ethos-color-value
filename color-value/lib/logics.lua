@@ -65,6 +65,11 @@ local function parseTags(text, source)
                                 function(multiplier)
                                     return tostring(math.floor(0.5 + (tonumber(source:value()) or 0) * tonumber("1"..multiplier)))
                                 end)
+                            :gsub("_([%d.]+)x", -- _%fx multiplier using source:decimals...
+                                function(multiplier)
+                                    return tostring(formatWithDecimals((tonumber(source:value()) or 0) * (tonumber(multiplier) or 0), source))
+                                end)
+
                         )
         end
         return formatted
