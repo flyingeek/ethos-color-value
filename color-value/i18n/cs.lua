@@ -30,11 +30,11 @@ return {
     infoPanelGitHubRepo="GitHub repozitář",
     infoPanelVersion="Verze",
     infoPanelAuthor="Autor",
-    title="Název (in case of a match)",
+    title="Název (volitelné)",
     showBackgroundColor="Background Color",
     showCustomStates="Custom States",
     colorHint="Text color / Background Color",
-    state="State",
+    state="State (volitelné)",
     helpTagsTitle="Insert a tag",
     -- \z must be at the end of each line except the last one. \n is a newline
     -- put a space before the \z unless there is a \n

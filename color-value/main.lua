@@ -14,7 +14,8 @@ local L = assert(loadfile("lib/init.luac", "b")({
     defaultSourcePrecision = 0,
     infoIcon = lcd.loadMask("bitmaps/icon_info.png"),
     deleteIcon = lcd.loadMask("bitmaps/mask_delete_icon.png"),
-    isUTF8Compatible=tonumber(ethosVersion.major .. ethosVersion.minor) >= 17
+    isUTF8Compatible=tonumber(ethosVersion.major .. ethosVersion.minor) >= 17,
+    MAX_CONDITIONS = 5, -- be careful for storage(read/write) if you change this
 }, "L")) -- here "L" is the namespace used in the lib files
 
 local __ = L.translate
@@ -36,7 +37,6 @@ local function createTypeSource()
         type=WIDGET_TYPE_SOURCE,
         useBackgroung=false,
         useState=false,
-        title="",
         -- output values
         value=nil,
         minimum=nil,
@@ -180,9 +180,11 @@ local function paint(widget)
     if widget.showTitle then
         lcd.font(FONT_S)
         lcd.color(titleColor)
-        local titles = {widget.source and widget.source:name() or "---"}
-        if widget.useState and widget.title ~= "" and matchingCase then
-            titles = L.parseTags(widget.title, widget.source)
+        local titles
+        if widget.useState and matchingCase and matchingCase.title ~= "" then
+            titles = matchingCase:getTitle(widget.source)
+        else
+            titles = {widget.source and widget.source:name() or "---"}
         end
         for _, line in pairs(titles) do
             local _, h = lcd.getTextSize(line)
@@ -225,9 +227,15 @@ end
 
 local function read(widget)
     local value
+    local upgradeLogicsFromV1 = false
     widget.source = storage.read("source")
     widget.showTitle = storage.read("showTitle")
-    widget.logics = L.LogicCases:new():loadStorageString(storage.read("logics") or "")
+    -- backward compatibility v1
+    value = storage.read("logics")
+    if value and type(value) == "string" and value ~="" then
+        widget.logics = L.LogicCases:new():loadStorageString(value)
+        upgradeLogicsFromV1 =true
+    end
     widget.showMinMax = storage.read("showMinMax")
     widget.type = storage.read("type")
     -- version 1.1
@@ -235,21 +243,46 @@ local function read(widget)
     if value ~= nil then widget.useBackgroung = value end
     value = storage.read("useState")
     if value ~= nil then widget.useState = value end
-    value = storage.read("title")
-    if type(value) == "string" then widget.title = value end
+    -- due to string length restriction we had to split logics in 5 stores
+    if upgradeLogicsFromV1 then
+        -- this is an upgrade for title of 1.1.0-rc1 and 1.1.0-rc2
+        value = storage.read("title")
+        if type(value) == "string" then
+            for i=1,widget.logics:count() do
+                local logic = widget.logics:get(i)
+                logic.title = value
+            end
+        end
+    else
+        for i=1,L.MAX_CONDITIONS do
+            value = storage.read(string.format("logic%s", i))
+            if value and type(value) == "string" and value ~="" then
+                widget.logics:add(L.LogicCase:new():loadStorageString(value))
+            end
+        end
+    end
 end
 
 local function write(widget)
-    --log("storage.write")
     storage.write("source", widget.source)
     storage.write("showTitle", widget.showTitle)
-    storage.write("logics", widget.logics:asStorageString())
-    --log(string.format("logics: %s", widget.logics:asStorageString()))
+    storage.write("logics", "") -- erase v1 storage as of 1.1.0-rc3
     storage.write("showMinMax", widget.showMinMax)
     storage.write("type", widget.type)
+    -- version 1.1 rc1
     storage.write("useBackgroung", widget.useBackgroung)
     storage.write("useState", widget.useState)
-    storage.write("title", L.trim(widget.title))
+    -- version 1.1 rc3
+    for i=1,L.MAX_CONDITIONS do
+        if widget.logics then
+            local logic = widget.logics:get(i)
+            if logic then
+                storage.write(string.format("logic%s", i), logic:asStorageString())
+            else
+                storage.write(string.format("logic%s", i), "")
+            end
+        end
+    end
 end
 
 local function menu(widget)

@@ -94,7 +94,8 @@ local LogicCase = {
     ope=OPE_LESS,
     color=lcd.themeColor(THEME_WARNING_COLOR),
     bgcolor=lcd.themeColor(THEME_DEFAULT_BGCOLOR),
-    text=""
+    text="",
+    title=""
 }
 function LogicCase:new (o)
     o = o or {}
@@ -119,17 +120,17 @@ function LogicCase:test(value)
     return false
 end
 function LogicCase:__tostring()
-    return string.format("LogicCase: ope=%s, threshold=%s, color=%s bgcolor=%s text=%s", self.ope, self.threshold, self.color, self.bgcolor, self.text)
+    return string.format("LogicCase: ope=%s, threshold=%s, color=%s bgcolor=%s text=%s title=%s", self.ope, self.threshold, self.color, self.bgcolor, self.text, self.title)
 end
 function LogicCase:asStorageString()
-    return string.format("%s,%s,%s,%s,%s", self.ope, self.threshold, self.color, self.bgcolor, escape(trim(self.text)))
+    return string.format("%s,%s,%s,%s,%s,%s", self.ope, self.threshold, self.color, self.bgcolor, escape(trim(self.text)), escape(trim(self.title)))
 end
 function LogicCase:loadStorageString(s)
     local t = {}
-    for m in string.gmatch(s, "([^,]+)") do
+    for m in string.gmatch(s, "([^,]*)") do
         table.insert(t, m)
     end
-    if #t ~= 5 then
+    if #t ~= 6 then
         warn("LogicCase:loadString bad format "..s)
     end
     if t[1] ~= nil then self.ope = tonumber(t[1]) end
@@ -137,18 +138,26 @@ function LogicCase:loadStorageString(s)
     if t[3] ~= nil then self.color = tonumber(t[3]) end
     if t[4] ~= nil then self.bgcolor = tonumber(t[4]) end
     if t[5] ~= nil then self.text = decode(t[5]) end
+    if t[6] ~= nil then self.title = decode(t[6]) end
 
     return self
 end
 function LogicCase:getText(source)
     return parseTags(self.text, source)
 end
+function LogicCase:getTitle(source)
+    return parseTags(self.title, source)
+end
 function LogicCase:appendText(s)
     if s then
         self.text = self.text .. tostring(s)
     end
 end
-
+function LogicCase:appendTitle(s)
+    if s then
+        self.title = self.title .. tostring(s)
+    end
+end
 local LogicCases = {}
 
 function LogicCases:new (source)
@@ -191,12 +200,13 @@ end
 function LogicCases:__tostring()
     local out = "{"
     for k, logicCase in pairs(self.logicCases) do
-        out = "\n" .. out .. tostring(logicCase)
+        out = out .."\n".. tostring(logicCase)
     end
     if #(self.logicCases) > 0 then  out = out .. "\n" end
     out = out .."}"
     return out
 end
+-- legacy function string too long for storage with text and title include
 function LogicCases:asStorageString()
     local out=""
     for i,logicCase in pairs(self.logicCases) do
@@ -205,6 +215,7 @@ function LogicCases:asStorageString()
     end
     return out
 end
+---- legacy function used to migrate from v1
 function LogicCases:loadStorageString(s)
     for line in string.gmatch(s, "([^/]+)") do
         table.insert(self.logicCases, LogicCase:new():loadStorageString(line))
@@ -250,5 +261,4 @@ return {
     ["OPE_MORE_OR_EQUAL"] = OPE_MORE_OR_EQUAL,
     ["OPE_EQUAL"] = OPE_EQUAL,
     LogicCases = LogicCases,
-    parseTags = parseTags,
 }

@@ -15,7 +15,7 @@ return {
     ok="OK",
     yes="Oui",
     no="Non",
-    logicPanel="Couleur à utiliser (optionnel)",
+    logicPanel="Couleur à utiliser (facultatif)",
     showTitle="Titre",
     showMinMax="Minimum and Maximum",
     editMenuASCII="Editer %s", --ASCII
@@ -30,11 +30,11 @@ return {
     infoPanelGitHubRepo="Dépôt GitHub",
     infoPanelVersion="Version",
     infoPanelAuthor="Auteur",
-    title="Titre (si un cas est valide)",
+    title="Titre (facultatif)",
     showBackgroundColor="Arrière plan",
     showCustomStates="Etats personnalisés",
     colorHint="Couleur Texte / Arrière plan",
-    state="Etat",
+    state="Etat (facultatif)",
     helpTagsTitle="Insérer une balise",
     -- \z must be at the end of each line except the last one. \n is a newline
     -- put a space before the \z unless there is a \n

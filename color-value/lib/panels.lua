@@ -2,7 +2,7 @@
 local L = L
 local __ = L.translate
 local function positionLabel(line, x, label, color)
-    local slots = form.getFieldSlots(line, {label, 0})
+    local slots = form.getFieldSlots(line, {L.replaceUTF8(label, "e"), 0})
     if x == nil then x = slots[1].x - slots[1].w - 10 end
     local rect = slots[1]
     rect.x = x
@@ -16,23 +16,19 @@ local function fillLogicPanel(panel, widget, grabFocus)
     if panel == nil then return end
     if grabFocus == nil then grabFocus = true end
 
-    local function appendTag(index, tag)
-        if index==0 then
-            widget.title = widget.title .. " " ..tag
+    local function appendTag(index, tag, method)
+        local logic = widget.logics:get(index)
+        if logic then
+            L.LogicCase[method](logic, " " .. tag)
+            model.dirty()
             fillLogicPanel(panel, widget)
-        else
-            local logic = widget.logics:get(index)
-            if logic then
-                logic:appendText(" " .. tag)
-                fillLogicPanel(panel, widget)
-            end
         end
     end
-    local function buildTagButtons(i)
+    local function buildTagButtons(i, method)
         local buttons = {}
         if lcdWidth >= 800 then
             table.insert(buttons,
-                {label=" _b ", action=function() appendTag(i, "_b") return true end}
+                {label=" _b ", action=function() appendTag(i, "_b", method) return true end}
             )
         end
         if widget.source.decimals and widget.source:decimals() then
@@ -43,11 +39,11 @@ local function fillLogicPanel(panel, widget, grabFocus)
                 local tag = "_"..tostring(j).."v"
                 if j ~= precision then
                     table.insert(buttons,
-                        {label=string.format("%."..tostring(j).."f", widget.source:value() or 0, widget.source), action=function() appendTag(i, tag) return true end}
+                        {label=string.format("%."..tostring(j).."f", widget.source:value() or 0, widget.source), action=function() appendTag(i, tag, method) return true end}
                     )
                 else
                     table.insert(buttons,
-                        {label=string.format("%."..tostring(j).."f", widget.source:value() or 0, widget.source), action=function() appendTag(i, "_v") return true end}
+                        {label=string.format("%."..tostring(j).."f", widget.source:value() or 0, widget.source), action=function() appendTag(i, "_v", method) return true end}
                     )
                 end
                 k = k + 1
@@ -55,23 +51,40 @@ local function fillLogicPanel(panel, widget, grabFocus)
             end
         end
         local stringValue = widget.source:stringValue() == "---" and L.formatWithDecimals(0, widget.source)..widget.source:stringUnit() or widget.source:stringValue()
-        table.insert(buttons, {label=stringValue:sub(1, 10), action=function() appendTag(i, "_t") return true end})
-        table.insert(buttons, {label=widget.source:name(), action=function() appendTag(i, "_n") return true end})
+        table.insert(buttons, {label=stringValue:sub(1, 10), action=function() appendTag(i, "_t", method) return true end})
+        table.insert(buttons, {label=widget.source:name(), action=function() appendTag(i, "_n", method) return true end})
         table.insert(buttons, {label=__("ok"), action=function() return true end})
         return buttons
     end
+    local dialogWidth = math.floor(lcd.getWindowSize() * 0.9)
     local tagButtonText = "  ...  "
+    local function addTagButton(line, rect, i, method)
+        return form.addButton(line, rect,
+            { -- tag dialog
+                text=tagButtonText,
+                paint=function() end,
+                press=function()
+                    return form.openDialog({
+                        title=__("helpTagsTitle"),
+                        message=__("helpTags"),
+                        width=dialogWidth,
+                        buttons=buildTagButtons(i, method),
+                        options=TEXT_LEFT,
+                        closeWhenClickOutside=true
+                    })
+                end
+            })
+    end
     local choices = {
         {L.isUTF8Compatible and " ≤ " or " <= ", L.OPE_LESS_OR_EQUAL},
         {" < ", L.OPE_LESS},
         {" = ", L.OPE_EQUAL},
         {" > ", L.OPE_MORE},
         {L.isUTF8Compatible and " ≥ " or" >= ", L.OPE_MORE_OR_EQUAL}}
-    local maxConditions = 5
+    local maxConditions = L.MAX_CONDITIONS
     local line
     local slots
     local count = widget.logics:count()
-    local dialogWidth = math.floor(lcd.getWindowSize() * 0.9)
     local confirmDialogWidth = math.floor(math.min(400, lcd.getWindowSize() * 0.8))
     local colorWidth = 71
     local choiceWidth = 95
@@ -162,28 +175,22 @@ local function fillLogicPanel(panel, widget, grabFocus)
                 function(newValue) widget.logics:get(i).color = newValue end)
         end
         if widget.useState then
+            if widget.showTitle then
+                line = panel:addLine("", false)
+                positionLabel(line, nil, __("title"), grayColor)
+                slots = form.getFieldSlots(line, {0, tagButtonText})
+                form.addTextField(line, slots[1],
+                    function() return widget.logics:get(i).title end,
+                    function(newValue) widget.logics:get(i).title = newValue end)
+                addTagButton(line, slots[2], i, "appendTitle")
+            end
             line = panel:addLine("", i == count and count >= maxConditions)
             positionLabel(line, nil, __("state"), grayColor)
             slots = form.getFieldSlots(line, {0, tagButtonText})
             textField = form.addTextField(line, slots[1],
                 function() return widget.logics:get(i).text end,
                 function(newValue) widget.logics:get(i).text = newValue end)
-            form.addButton(line, slots[2],
-            { -- tag dialog
-                text=tagButtonText,
-                paint=function() end,
-                press=function()
-                    return form.openDialog({
-                        title=__("helpTagsTitle"),
-                        message=__("helpTags"),
-                        width=dialogWidth,
-                        buttons=buildTagButtons(i),
-                        options=TEXT_LEFT,
-                        closeWhenClickOutside=true
-                    })
-                end
-            }
-        )
+            addTagButton(line, slots[2], i, "appendText")
         end
     end
     if grabFocus and textField then
@@ -223,28 +230,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
             addButton:focus()
         end
     end
-    if widget.showTitle and widget.useState and count > 0 then
-        line = panel:addLine(__("title"))
-        slots = form.getFieldSlots(line, {0, tagButtonText})
-        form.addTextField(line, slots[1],
-            function() return widget.title end,
-            function(newValue) widget.title = newValue end)
-        form.addButton(line, slots[2],
-        { -- tag dialog
-            text=tagButtonText,
-            paint=function() end,
-            press=function()
-                return form.openDialog({
-                    title=__("helpTagsTitle"),
-                    message=__("helpTags"),
-                    width=dialogWidth,
-                    buttons=buildTagButtons(0),
-                    options=TEXT_LEFT,
-                    closeWhenClickOutside=true
-                })
-            end
-        })
-    end
+
 end
 
 return {
