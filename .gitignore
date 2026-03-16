@@ -3,3 +3,4 @@
 .vscode
 .markdownlint.json
 simulator
+.luarc.json
