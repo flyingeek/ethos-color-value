@@ -8,7 +8,10 @@
 - Up to 5 configurable thresholds, each with his own color
 - Telemetry values may display min/max inside the widget or using the contextual menu
 - Works fine with timers too
-- International language support (french/english)
+- Background color support
+- Custom states (including special tags)
+- Beautiful [documentation](https://flyingeek.github.io/astro-color-value/) including a widget simulator
+- International language support (cs/de/en/es/fr/it)
 
 Note : Ethos ≥ 1.6.3 required
 
@@ -29,8 +32,15 @@ Note : Ethos ≥ 1.6.3 required
 ![config VFT](screenshots/config_panel_vfr.webp "VFR configuration screen")
 <p align="center">VFR configuration screen (Min/Max ON)</p>
 
+![going grazy](screenshots/go-crazy-demo.webp "A crazy demo")
+<p align="center">Demo screen</p>
+
+## Do not miss the documentation
+
+You can really try the widget in your browser with nice guided examples --> [Documentation](https://flyingeek.github.io/astro-color-value/)
+
 ## What's in the box ?
 
-When you install this file, it will install two widgets: **Color Value** and **Color Telemetry**. Both share the same code, the difference is that the **Color Telemetry** limits the source to be a sensor.
+After installation, two new widgets become available: **Color Value** and **Color Telemetry**. They use the same underlying code, but **Color Telemetry** limits the source to a telemetry sensor—so if you’re using telemetry, it’s faster to set up with Color Telemetry.
 
 To install or download, go to the [latest release page](https://github.com/flyingeek/ethos-color-value/releases/latest) and follow the instructions.
