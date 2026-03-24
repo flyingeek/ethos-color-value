@@ -60,6 +60,6 @@ return {
         à défaut, vous retrouverez ces valeurs dans le menu du widget\n\n\z",
     helpTags="\z
         Vous pouvez utiliser des balises pour insérer le nom de la source, ou la valeur de la source avec \z
-        différentes précisions. Vous pouvez aussi utiliser  __  pour insérer le tiret du bas ou  _b  pour \z
-        une nouvelle ligne. Cliquer sur un bouton insère la balise correspondante."
+        différentes précisions. D'autres balises peuvent être trouvées dans la documentation. \z
+        Cliquer sur un bouton insère la balise correspondante."
 }

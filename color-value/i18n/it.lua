@@ -58,5 +58,5 @@ return {
         questi valori saranno mostrati nel menu del widget.\n\n\z",
     helpTags="\z
         Potete usare Tag speciali per inserire un nome sorgente o il valore sorgente con una precisione differente. \z
-        Tag addizionali sono  __  per underscore, e  _b  per interruzione di linea. Clicca un bottone per inserire un tag."
+        Altri tag possono essere trovati nella documentazione. Clicca un bottone per inserire un tag."
 }

@@ -31,32 +31,32 @@ return {
     infoPanelVersion="Verze",
     infoPanelAuthor="Autor",
     title="Název (volitelné)",
-    showBackgroundColor="Background Color",
-    showCustomStates="Custom States",
-    colorHint="Text color / Background Color",
-    state="State (volitelné)",
-    helpTagsTitle="Insert a tag",
+    showBackgroundColor="Barva pozadí",
+    showCustomStates="Vlastní stavy",
+    colorHint="Barva textu / Barva pozadí",
+    state="Stav (volitelné)",
+    helpTagsTitle="Vložit značku",
     -- \z must be at the end of each line except the last one. \n is a newline
     -- put a space before the \z unless there is a \n
     helpMessage="\z
-        The widget displays the source value using the default theme color. \z
-        You may add up to 5 thresholds, each using their own colors. The order \z
-        is important as only the first match is considered. \z
-        The case matching the current condition is highlighted.\n\n\z
+        Widget zobrazuje hodnotu zdroje ve výchozí barvě motivu. \z
+        Můžete přidat až 5 prahů, každý s vlastní barvou. Pořadí \z
+        je důležité, protože se bere v úvahu pouze první shoda. \z
+        Podmínka odpovídající aktuálnímu stavu je zvýrazněna.\n\n\z
         \z
-        If you enable Background Color, you may set the text color and the background color.\n\n\z
+        Pokud povolíte Barvu pozadí, můžete nastavit barvu textu i barvu pozadí.\n\n\z
         \z
-        If the source is a sensor and the telemetry is lost, \z
-        the theme's warning color will be used without background.\n\z
-        If the widget has the focus, the focus color is applied.\n\n\z
+        Pokud je zdrojem senzor a dojde ke ztrátě telemetrie, \z
+        použije se varovná barva motivu bez pozadí.\n\z
+        Pokud má widget fokus, použije se barva fokusu.\n\n\z
         \z
-        Custom States, when set, override the value with a custom text, \z
-        and special tags are available in the button next to the state field. \z
-        When state is empty, the default value is shown in the widget.\n\n\z
+        Vlastní stavy po nastavení nahradí hodnotu vlastním textem \z
+        a speciální značky jsou dostupné v tlačítku vedle pole stav. \z
+        Když je stav prázdný, ve widgetu se zobrazí výchozí hodnota.\n\n\z
         \z
-        For sensors, Minimum and Maximum can be displayed in the widget, otherwise \z
-        those values will be shown in the widget's menu.\n\n\z",
+        U senzorů lze ve widgetu zobrazit Minimum a Maximum, jinak \z
+        se tyto hodnoty zobrazí v menu widgetu.\n\n\z",
     helpTags="\z
-        You may use special tags to insert the source name or the source value in different precisions. \z
-        Additional tags are  __  for underscore, and  _b  for line break. Click a button to insert the tag."
+        Můžete použít speciální značky pro vložení názvu zdroje nebo hodnoty zdroje s různou přesností. \z
+        Další značky najdete v dokumentaci. Kliknutím na tlačítko značku vložíte."
 }

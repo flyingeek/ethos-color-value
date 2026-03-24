@@ -4,12 +4,12 @@
 return {
     widgetNameTypeSourceASCII="Farbwert", --ASCII
     widgetNameTypeSourceUTF8="Farbwert",-- subset utf8
-    widgetNameTypeSensorASCII="Farbe Telemerie", --ASCII
-    widgetNameTypeSensorUTF8="Farbe Telemerie",-- subset utf8
+    widgetNameTypeSensorASCII="Farbtelemetrie", --ASCII
+    widgetNameTypeSensorUTF8="Farbtelemetrie",-- subset utf8
     source="Quelle",
     case="Fall%d",
     confirmTitle="Bestätigen",
-    caseDeleteMessage="Delete Fall%d löschen?",
+    caseDeleteMessage="Fall%d löschen?",
     conditionLabel="Wenn %s",
     help="Hilfe",
     ok="OK",
@@ -50,13 +50,13 @@ return {
         wird die Warnfarbe des Themas ohne Hintergrund verwendet.\n\z
         Wenn das Widget den Fokus hat, wird die Fokusfarbe angewendet.\n\n\z
         \z
-        Benutzerdefinierte Zustände überschreiben, sofern festgelegt, den Wert mit einem benutzerdefinierten Text,  \z
-        Spezielle Tags sind über die Schaltfläche neben dem Feld „Bundesland“ verfügbar.\n\z
-        When state is empty, the default value is shown in the widget.\n\n\z
+        Benutzerdefinierte Zustände überschreiben, sofern festgelegt, den Wert mit einem benutzerdefinierten Text, \z
+        Spezielle Tags sind über die Schaltfläche neben dem Statusfeld verfügbar.\n\z
+        Wenn der Status leer ist, wird der Standardwert im Widget angezeigt.\n\n\z
         \z
         Bei Sensoren können Minimum und Maximum im Widget angezeigt werden, andernfalls \z
         werden diese Werte im Menü des Widgets angezeigt.\n\n\z",
     helpTags="\z
         Sie können spezielle Tags verwenden, um den Quellnamen oder den Quellwert in unterschiedlichen Genauigkeiten einzufügen. \z
-        Weitere Tags sind __ für Unterstrich und _b für Zeilenumbruch. Klicken Sie auf eine Schaltfläche, um den Tag einzufügen"
+        Weitere Tags können in der Dokumentation gefunden werden. Klicken Sie auf eine Schaltfläche, um den Tag einzufügen."
 }
