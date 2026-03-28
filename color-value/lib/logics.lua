@@ -184,11 +184,14 @@ function LogicCases:new (source)
 end
 
 function LogicCases:add(logicCase)
-    local count = #(self.logicCases)
-    local newLogic = logicCase or LogicCase:new()
-    if count >= 1 then
-        newLogic.ope = self.logicCases[count].ope
-        newLogic.threshold = self.logicCases[count].threshold
+    local newLogic = logicCase
+    if newLogic == nil then -- add a new logic from configure panel
+        local count = #(self.logicCases)
+        local newLogic = LogicCase:new()
+        if count >= 1 then
+            newLogic.ope = self.logicCases[count].ope
+            newLogic.threshold = self.logicCases[count].threshold
+        end
     end
     table.insert(self.logicCases, newLogic)
     return newLogic
