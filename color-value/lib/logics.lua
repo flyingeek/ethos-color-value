@@ -183,11 +183,21 @@ function LogicCases:new (source)
     return o
 end
 
+function LogicCases:__tostring()
+    local out = "{"
+    for k, logicCase in pairs(self.logicCases) do
+        out = out .."\n".. tostring(logicCase)
+    end
+    if #(self.logicCases) > 0 then  out = out .. "\n" end
+    out = out .."}"
+    return out
+end
+
 function LogicCases:add(logicCase)
     local newLogic = logicCase
     if newLogic == nil then -- add a new logic from configure panel
         local count = #(self.logicCases)
-        local newLogic = LogicCase:new()
+        newLogic = LogicCase:new()
         if count >= 1 then
             newLogic.ope = self.logicCases[count].ope
             newLogic.threshold = self.logicCases[count].threshold
@@ -199,15 +209,6 @@ end
 function LogicCases:remove(pos)
     table.remove(self.logicCases, pos)
     return self
-end
-function LogicCases:__tostring()
-    local out = "{"
-    for k, logicCase in pairs(self.logicCases) do
-        out = out .."\n".. tostring(logicCase)
-    end
-    if #(self.logicCases) > 0 then  out = out .. "\n" end
-    out = out .."}"
-    return out
 end
 -- legacy function string too long for storage with text and title include
 function LogicCases:asStorageString()
