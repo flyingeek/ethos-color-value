@@ -1,4 +1,6 @@
-# 1.1.0
+# 1.1.1
+
+**Version 1.1.1 fix a critical error in read from storage, all users should perform the update.**
 
 Although I added many features, the UI can stay very minimmalist, as before.
 
