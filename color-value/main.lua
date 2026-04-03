@@ -8,8 +8,8 @@ local WIDGET_TYPE_SENSOR = 2
 local ethosVersion = system.getVersion()
 local runningInSimulator = ethosVersion.simulation
 -- widget backgrounds
-local widgetBgColorDark = tonumber(ethosVersion.major .. ethosVersion.minor) >= 261 and lcd.RGB(40, 48, 56) or lcd.RGB(0x29, 0x28, 0x29)
-local widgetBgColorLight = tonumber(ethosVersion.major .. ethosVersion.minor) >= 261 and lcd.RGB(214, 214, 214) or lcd.RGB(0xF6, 0xF3, 0xF7)
+local widgetBgColorDark = ethosVersion.major >= 26 and lcd.RGB(40, 48, 56) or lcd.RGB(0x29, 0x28, 0x29)
+local widgetBgColorLight = ethosVersion.major >= 26 and lcd.RGB(214, 214, 214) or lcd.RGB(0xF6, 0xF3, 0xF7)
 
 
 system.compile("lib/init.lua")
@@ -18,7 +18,7 @@ local L = assert(loadfile("lib/init.luac", "b")({
     defaultSourcePrecision = 0,
     infoIcon = lcd.loadMask("bitmaps/icon_info.png"),
     deleteIcon = lcd.loadMask("bitmaps/mask_delete_icon.png"),
-    isUTF8Compatible=tonumber(ethosVersion.major .. ethosVersion.minor) >= 17,
+    isUTF8Compatible=ethosVersion.major >= 26,
     MAX_CONDITIONS = 5, -- be careful for storage(read/write) if you change this
     defaultWidgetTitleColor = lcd.RGB(0xB0, 0xB0, 0xB0),
     defaultColor = lcd.RGB(0xF8, 0xFC, 0xF8),
