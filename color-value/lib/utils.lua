@@ -35,21 +35,27 @@ end
 local function bestFit(strOrTable, fontIndexList, maxWidth, maxHeight, altChar)
     local boxW, boxH, bestFont, lineH
     local overflow = true
-    local lines
-    if type(strOrTable) == "string" then
-        lines = {strOrTable}
-    else
-        lines = strOrTable
+    local lineCount = 1
+    local sType = 0 -- string
+    if type(strOrTable) == "table" then
+        sType = 1
+        lineCount = #strOrTable
     end
 
     for _, font in pairs(fontIndexList) do
+        local line
         boxW = 0
         boxH = 0
         lineH = 0
         overflow = true
         lcd.font(font)
         bestFont = font
-        for _, line in pairs(lines) do
+        for i=1, lineCount do
+            if i == 1 and sType == 0 then
+                line = strOrTable
+            else
+                line = strOrTable[i]
+            end
             if not isUTF8Compatible then
                 line = replaceUTF8(line, altChar)
             end

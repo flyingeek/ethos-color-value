@@ -49,6 +49,23 @@ local function escapePattern(pattern)
     return escaped
 end
 
+local function count_b(str)
+    local count = 0
+    local prev = 0
+    local len = #str
+    local byte = string.byte
+
+    for i = 1, len - 1 do
+        local c = byte(str, i)
+        if c == 95 and prev ~= 95 and byte(str, i + 1) == 98 then
+            count = count + 1
+        end
+        prev = c
+    end
+
+    return count
+end
+
 local function parseTags(text, source)
     local function replaceTag(s)
         local formatted = s
@@ -267,4 +284,5 @@ return {
     ["OPE_MORE_OR_EQUAL"] = OPE_MORE_OR_EQUAL,
     ["OPE_EQUAL"] = OPE_EQUAL,
     LogicCases = LogicCases,
+    count_b
 }

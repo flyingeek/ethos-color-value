@@ -10,7 +10,11 @@ local runningInSimulator = ethosVersion.simulation
 -- widget backgrounds
 local widgetBgColorDark = ethosVersion.major >= 26 and lcd.RGB(40, 48, 56) or lcd.RGB(0x29, 0x28, 0x29)
 local widgetBgColorLight = ethosVersion.major >= 26 and lcd.RGB(214, 214, 214) or lcd.RGB(0xF6, 0xF3, 0xF7)
-
+local widgetMargin = 4
+local widgetTitleFont = FONT_S
+local valueFonts = {FONT_XXL, FONT_XL, FONT_L, FONT_M or FONT_STD}
+local minmaxFonts = {FONT_M or FONT_STD, FONT_S, FONT_XS}
+local minmaxFontsSmall = {FONT_M or FONT_STD, FONT_S} -- for widget width < 256
 
 system.compile("lib/init.lua")
 local L = assert(loadfile("lib/init.luac", "b")({
@@ -33,7 +37,7 @@ local log = L.log
 ---this is the create method for the Color Value Widget
 ---@return table
 local function createTypeSource()
-     return {
+     local data = {
         -- configure parameters (saved in storage)
         source=nil,
         logics=L.LogicCases:new(),
@@ -48,8 +52,35 @@ local function createTypeSource()
         maximum=nil,
         telemetryState=nil,
         -- others
-        timestamp = 0 -- timestamp of last update per widget instance
+        timestamp = 0, -- timestamp of last update per widget instance
+        updateNextWakeup = true, -- when true, forces update of the widget in the next wakeup (used after configuration changes in write function or on init)
+        -- computed parameters for paint (not saved in storage)
+        width = nil,
+        height = nil,
+        matchingCaseIndex = nil,
+        -- titleParameters
+        titleLineHeight = 0,
+        titleColor = 0,
+        -- valueParameters
+        valueWidth = 0,
+        valueHeight = 0,
+        valueLineHeight=0,
+        valueFont=0,
+        valueColor=0,
+        valueY=0,
+        -- minmax Parameters
+        minmaxFont=0,
+        minValueY=0,
+        minValueHeight=0,
+        minValueWidth=0,
+        maxValueHeight=0,
+        maxValueWidth=0,
+        formattedMinValue="",
+        formattedMaxValue="",
      }
+     lcd.font(widgetTitleFont)
+     data.titleLineHeight = select(2, lcd.getTextSize("T"))
+     return data
 end
 
 ---this is the create method for the Telemetry Value Widget
@@ -82,7 +113,7 @@ local function configure(widget)
                 widget.logics = L.LogicCases:new(newValue)
                 widget.showMinMax = defaultShowMinMax
                 form.clear()
-                return configure(widget) --tail call
+                configure(widget) --tail call
             end
         end
     )
@@ -116,8 +147,79 @@ local function configure(widget)
     widget.focus = nil
 end
 
+local function enforceWarningColor(widget)
+    widget.valueColor = lcd.themeColor(THEME_WARNING_COLOR)
+    widget.titleColor = L.defaultWidgetTitleColor
+end
+
+local function updateParameters(widget)
+    --- TITLE ---
+    local titleHeight = 0
+    if widget.showTitle then
+        local titleColor = L.defaultWidgetTitleColor
+        titleHeight = widget.titleLineHeight
+        if widget.matchingCaseIndex then
+            local matchingCase = widget.logics:get(widget.matchingCaseIndex)
+            if widget.useBackgroung and matchingCase.bgcolor then
+                titleColor = matchingCase.color
+            end
+            if widget.useState then
+                local matchingTitle = matchingCase.title
+                if matchingTitle ~= "" then
+                    titleHeight = widget.titleLineHeight * (1 + L.count_b(matchingTitle))
+                end
+            end
+        end
+        widget.titleColor = titleColor
+    end
+
+    --- VALUE ---
+    if not L.sourceExists(widget.source) then return end
+    local fgColor = L.defaultColor
+    local output = widget.source:stringValue() or ""
+    local w, h = widget.width or 0, widget.height or 0
+    if widget.matchingCaseIndex then
+        local matchingCase = widget.logics:get(widget.matchingCaseIndex)
+        fgColor = matchingCase.color
+        if widget.useState and matchingCase.text~="" then
+            output = matchingCase:getText(widget.source)
+        end
+    end
+    widget.valueWidth, widget.valueHeight, widget.valueLineHeight, widget.valueFont = L.bestFit(output, valueFonts, w - (widgetMargin * 2), h - widgetMargin - titleHeight)
+    widget.valueColor = fgColor
+    widget.valueY = (widgetMargin + titleHeight - widget.valueHeight + h) / 2
+
+    --- MIN/MAX ---
+    if widget.showMinMax and L.isSensor(widget.source) and widget.minimum ~= nil and widget.maximum ~= nil then
+        widget.formattedMinValue = L.formatWithDecimals(widget.minimum, widget.source).."↓"
+        widget.formattedMaxValue = L.formatWithDecimals(widget.maximum, widget.source).."↑"
+        local maxValueY = widgetMargin
+        -- we want minValueY + minValueHeight < valueY and we consider minValueHeight == maxValueHeight
+        local maxHeight = (widget.valueY/2) - ((3 * widgetMargin)/4)
+        -- find and set best font size for the widget's size
+        local allowedSize = widget.width < 256 and minmaxFontsSmall or minmaxFonts
+        local minValueWidth, minValueHeight, bestFont = L.bestOverlap(widget.formattedMinValue, allowedSize, (widget.width - widget.valueWidth)/2 , maxHeight, "0")
+        local maxValueWidth, maxValueHeight = lcd.getTextSize(L.isUTF8Compatible and widget.formattedMaxValue or L.replaceUTF8(widget.formattedMaxValue, "0"))
+        widget.minValueY = maxValueY + maxValueHeight + (widgetMargin/2)
+        widget.minValueHeight = minValueHeight
+        widget.minValueWidth = minValueWidth
+        widget.maxValueHeight = maxValueHeight
+        widget.maxValueWidth = maxValueWidth
+        widget.minmaxFont = bestFont
+    end
+end
+
 local function wakeup(widget)
     local newTimestamp = os.clock()
+    if widget.updateNextWakeup then
+        widget.updateNextWakeup = false
+        updateParameters(widget)
+        if widget.telemetryState == false and widget.value ~= nil then
+            enforceWarningColor(widget)
+        end
+        lcd.invalidate()
+        return
+    end
     if widget.source and newTimestamp >= widget.timestamp + refreshRate then
         widget.timestamp = newTimestamp
         local newValue = widget.source:value()
@@ -128,104 +230,84 @@ local function wakeup(widget)
             widget.value = newValue
             widget.minimum = newMinimum
             widget.maximum = newMaximum
+            widget.matchingCaseIndex = widget.logics:matchIndex(newValue)
+            updateParameters(widget)
             lcd.invalidate()
         end
         if widget.telemetryState ~= newTelemetryState and L.isSensor(widget.source) then
             widget.telemetryState = newTelemetryState
+            if widget.telemetryState == false and widget.value ~= nil then
+                enforceWarningColor(widget)
+            end
             lcd.invalidate()
         end
     end
 end
 
 local function paint(widget)
-    local textFocusBgColor = lcd.darkMode() and lcd.themeColor(THEME_FOCUS_BGCOLOR) or lcd.color(COLOR_WHITE)
-    local titleColor = lcd.hasFocus() and textFocusBgColor or L.defaultWidgetTitleColor
-    local defaultColor = lcd.hasFocus() and textFocusBgColor or L.defaultColor
-    local warningColor = lcd.themeColor(THEME_WARNING_COLOR)
-    local _
-    local titleHeight = 0
-    local margin = 4
-    local w, h = lcd.getWindowSize()
-
     if not L.sourceExists(widget.source) then return end
-    --
-    -- The code below has a valid widget.source
-    --
+    local focusBgColor = lcd.darkMode() and lcd.themeColor(THEME_FOCUS_BGCOLOR) or lcd.color(COLOR_WHITE)
+    local margin = widgetMargin
+    local w, h = widget.width or 0, widget.height or 0
 
-    -- Source Value output
-    --
-    -- choose color using Default Color, Logic Color or Telemetry Lost Color
-    local fgColor = defaultColor
-    local minmaxColor = defaultColor
-    local mayUseBackground = false
-    local matchingCase = widget.logics:match(widget.value)
+    local minmaxColor = L.defaultColor
+    local matchingCase
     local outputValues
+    if widget.matchingCaseIndex then
+        matchingCase = widget.logics:get(widget.matchingCaseIndex)
+    end
     if widget.useState and matchingCase and matchingCase.text~="" then
         outputValues = matchingCase:getText(widget.source)
-    else
-        outputValues = {widget.source:stringValue()}
     end
-    if widget.value ~= nil and widget.telemetryState == false and L.isSensor(widget.source) then -- telemetry lost
-        fgColor = warningColor
-    elseif matchingCase then
-        fgColor = matchingCase.color
-        if widget.useBackgroung and matchingCase.bgcolor and not lcd.hasFocus() then
-            titleColor = matchingCase.color
-            mayUseBackground = true
-        end
-    end
-    if mayUseBackground and matchingCase.bgcolor then
-
-        if (lcd.darkMode() and matchingCase.bgcolor ~= widgetBgColorDark) or (not lcd.darkMode() and  matchingCase.bgcolor ~= widgetBgColorLight) then
-            lcd.color(matchingCase.bgcolor)
+    if not(widget.value ~= nil and widget.telemetryState == false and L.isSensor(widget.source)) and widget.useBackgroung and matchingCase and matchingCase.bgcolor then
+        local bgcolor = matchingCase.bgcolor
+        if not lcd.hasFocus() and ((lcd.darkMode() and bgcolor ~= widgetBgColorDark) or (not lcd.darkMode() and  bgcolor ~= widgetBgColorLight)) then
+            lcd.color(bgcolor)
             lcd.drawFilledRectangle(0, 0, w, h)
-            minmaxColor = matchingCase.fgColor
+            minmaxColor = matchingCase.color
         end
     end
     if widget.showTitle then
-        lcd.font(FONT_S)
-        lcd.color(titleColor)
+        lcd.font(widgetTitleFont)
+        lcd.color(lcd.hasFocus() and focusBgColor or widget.titleColor)
         local titles
         if widget.useState and matchingCase and matchingCase.title ~= "" then
             titles = matchingCase:getTitle(widget.source)
-        else
-            titles = {widget.source and widget.source:name() or "---"}
         end
-        for _, line in pairs(titles) do
-            local _, h = lcd.getTextSize(line)
-            lcd.drawText(w/2, margin + titleHeight, line, TEXT_CENTERED)
-            titleHeight = titleHeight + h
+        if titles then
+            local titleLineHeight = widget.titleLineHeight
+            for i=1, #titles do
+                lcd.drawText(w/2, margin + (i - 1) * titleLineHeight, titles[i], TEXT_CENTERED)
+            end
+        else
+            lcd.drawText(w/2, margin, widget.source and widget.source:name() or "---", TEXT_CENTERED)
         end
     end
-    -- find and set best font size for the widget's size
-    local valueWidth, valueHeight, lineHeight = L.bestFit(outputValues, {FONT_XXL, FONT_XL, FONT_L, FONT_M or FONT_STD}, w - (margin * 2), h - margin - titleHeight)
-    local valueY = (margin + titleHeight - valueHeight + h) / 2
 
-    lcd.color(lcd.hasFocus() and defaultColor or fgColor)
-    for i, line in pairs(outputValues) do
-        lcd.drawText(w/2, valueY + (i - 1) * lineHeight, line, TEXT_CENTERED)
+    local valueY = widget.valueY
+    lcd.color(lcd.hasFocus() and focusBgColor or widget.valueColor)
+    lcd.font(widget.valueFont)
+    if outputValues then
+        local lineHeight = widget.valueLineHeight
+        for i=1, #outputValues do
+            lcd.drawText(w/2, valueY + (i - 1) * lineHeight, outputValues[i], TEXT_CENTERED)
+        end
+    else
+        lcd.drawText(w/2, valueY, widget.source:stringValue(), TEXT_CENTERED)
     end
 
     -- Min/Max Values output
-    lcd.color(lcd.hasFocus() and defaultColor or minmaxColor)
+    lcd.color(lcd.hasFocus() and focusBgColor or minmaxColor)
     if widget.showMinMax and L.isSensor(widget.source) and widget.minimum ~= nil and widget.maximum ~= nil then
-        local formattedMinValue = L.formatWithDecimals(widget.minimum, widget.source).."↓"
-        local formattedMaxValue = L.formatWithDecimals(widget.maximum, widget.source).."↑"
         local maxValueY = margin
-        -- we want minValueY + minValueHeight < valueY and we consider minValueHeight == maxValueHeight
-        local maxHeight = (valueY/2) - ((3 * margin)/4)
-        -- find and set best font size for the widget's size
-        local allowedSize = w < 256 and {FONT_L, FONT_M or FONT_STD, FONT_S, FONT_XS} or {FONT_L, FONT_M or FONT_STD, FONT_S}
-        local minValueWidth, minValueHeight = L.bestOverlap(formattedMinValue, allowedSize, (w - valueWidth)/2 , maxHeight, "0")
-        local maxValueWidth, maxValueHeight = lcd.getTextSize(L.isUTF8Compatible and formattedMaxValue or L.replaceUTF8(formattedMaxValue, "0"))
-        local minValueY = maxValueY + maxValueHeight + (margin/2)
-        lcd.drawText(w - margin, maxValueY, formattedMaxValue, TEXT_RIGHT)
-        lcd.drawText(w - margin, minValueY, formattedMinValue, TEXT_RIGHT)
+        lcd.font(widget.minmaxFont)
+        lcd.drawText(w - margin, maxValueY, widget.formattedMaxValue, TEXT_RIGHT)
+        lcd.drawText(w - margin, widget.minValueY, widget.formattedMinValue, TEXT_RIGHT)
         lcd.drawLine(
-            w - margin - math.max(maxValueWidth, minValueWidth) - margin, --x1
-            maxValueY + maxValueHeight,--y1
+            w - margin - math.max(widget.maxValueWidth, widget.minValueWidth) - margin, --x1
+            maxValueY + widget.maxValueHeight,--y1
             w - margin,--x2
-            maxValueY + maxValueHeight --y2
+            maxValueY + widget.maxValueHeight --y2
         )
     end
 end
@@ -269,6 +351,7 @@ local function read(widget)
 end
 
 local function write(widget)
+    widget.updateNextWakeup = true
     storage.write("source", widget.source)
     storage.write("showTitle", widget.showTitle)
     storage.write("logics", "") -- erase v1 storage as of 1.1.0-rc3
@@ -336,12 +419,19 @@ local function menu(widget)
 end
 
 local function build(widget)
+    log("build called for widget with source: %s", widget.source and widget.source:name() or "nil")
+    log(THEME_DEFAULT_COLOR)
+    log(THEME_PRIMARY_COLOR)
+    log(THEME_SECONDARY_COLOR)
+    log(THEME_DEFAULT_BGCOLOR)
+    log(THEME_PRIMARY_BGCOLOR)
+    log(THEME_SECONDARY_BGCOLOR)
     local isDarkMode = lcd.darkMode()
-    L.defaultWidgetTitleColor = isDarkMode and lcd.RGB(0xB0, 0xB0, 0xB0) or lcd.RGB(0x58, 0x54, 0x58)
-    L.defaultColor = isDarkMode and lcd.RGB(0xF8, 0xFC, 0xF8) or lcd.RGB(0x58, 0x54, 0x58)
-    L.defaultBgColor = isDarkMode and lcd.RGB(0x20, 0x20, 0x20) or lcd.RGB(0xF0, 0xF0, 0xF0)
-    L.defaultWidgetBgColor = isDarkMode and widgetBgColorDark or widgetBgColorLight
-
+    L.defaultWidgetTitleColor = THEME_SECONDARY_COLOR and lcd.themeColor(THEME_SECONDARY_COLOR) or (isDarkMode and lcd.RGB(0xB0, 0xB0, 0xB0) or lcd.RGB(0x58, 0x54, 0x58))
+    L.defaultColor = THEME_PRIMARY_COLOR and lcd.themeColor(THEME_PRIMARY_COLOR) or (isDarkMode and lcd.RGB(0xF8, 0xFC, 0xF8) or lcd.RGB(0x58, 0x54, 0x58))
+    L.defaultBgColor = THEME_SECONDARY_BGCOLOR and lcd.themeColor(THEME_SECONDARY_BGCOLOR) or isDarkMode and lcd.RGB(0x20, 0x20, 0x20) or lcd.RGB(0xF0, 0xF0, 0xF0)
+    L.defaultWidgetBgColor = THEME_PRIMARY_BGCOLOR and lcd.themeColor(THEME_PRIMARY_BGCOLOR) or (isDarkMode and widgetBgColorDark or widgetBgColorLight)
+    widget.width, widget.height = lcd.getWindowSize()
     local locale = system.getLocale()
     if system.getLocale() ~= L.getLocale() then
         L.changeLocale(locale)
