@@ -8,7 +8,7 @@ local WIDGET_TYPE_SENSOR = 2
 local ethosVersion = system.getVersion()
 local runningInSimulator = ethosVersion.simulation
 -- widget backgrounds
-local widgetBgColorDark = ethosVersion.major >= 26 and lcd.RGB(40, 48, 56) or lcd.RGB(0x29, 0x28, 0x29)
+local widgetBgColorDark = ethosVersion.major >= 26 and lcd.RGB(40, 48, 56) or lcd.RGB(0x29, 0x29, 0x29)
 local widgetBgColorLight = ethosVersion.major >= 26 and lcd.RGB(214, 214, 214) or lcd.RGB(0xF6, 0xF3, 0xF7)
 local widgetMargin = 4
 local widgetTitleFont = FONT_S
@@ -419,13 +419,6 @@ local function menu(widget)
 end
 
 local function build(widget)
-    log("build called for widget with source: %s", widget.source and widget.source:name() or "nil")
-    log(THEME_DEFAULT_COLOR)
-    log(THEME_PRIMARY_COLOR)
-    log(THEME_SECONDARY_COLOR)
-    log(THEME_DEFAULT_BGCOLOR)
-    log(THEME_PRIMARY_BGCOLOR)
-    log(THEME_SECONDARY_BGCOLOR)
     local isDarkMode = lcd.darkMode()
     L.defaultWidgetTitleColor = THEME_SECONDARY_COLOR and lcd.themeColor(THEME_SECONDARY_COLOR) or (isDarkMode and lcd.RGB(0xB0, 0xB0, 0xB0) or lcd.RGB(0x58, 0x54, 0x58))
     L.defaultColor = THEME_PRIMARY_COLOR and lcd.themeColor(THEME_PRIMARY_COLOR) or (isDarkMode and lcd.RGB(0xF8, 0xFC, 0xF8) or lcd.RGB(0x58, 0x54, 0x58))
