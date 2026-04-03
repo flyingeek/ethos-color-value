@@ -6,6 +6,8 @@ local sourceExists = L.sourceExists
 local trim = L.trim
 ---@diagnostic disable-next-line: undefined-global
 local formatWithDecimals = L.formatWithDecimals
+---@diagnostic disable-next-line: undefined-global
+local function getWidgetBgColor() return L.defaultWidgetBgColor end
 
 local defaultThreshold = 0
 
@@ -92,8 +94,6 @@ end
 local LogicCase = {
     threshold=defaultThreshold,
     ope=OPE_LESS,
-    color=lcd.themeColor(THEME_WARNING_COLOR),
-    bgcolor=lcd.themeColor(THEME_DEFAULT_BGCOLOR),
     text="",
     title=""
 }
@@ -101,6 +101,8 @@ function LogicCase:new (o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
+    o.color = o.color or lcd.themeColor(THEME_WARNING_COLOR)
+    o.bgcolor = o.bgcolor or getWidgetBgColor()
     return o
 end
 function LogicCase:test(value)

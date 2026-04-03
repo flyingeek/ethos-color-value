@@ -1,6 +1,7 @@
 ---@diagnostic disable-next-line: undefined-global
 local L = L
 local __ = L.translate
+
 local function positionLabel(line, x, label, color)
     local slots = form.getFieldSlots(line, {L.replaceUTF8(label, "e"), 0})
     if x == nil then x = slots[1].x - slots[1].w - 10 end
@@ -11,7 +12,7 @@ local function positionLabel(line, x, label, color)
     return field, rect
 end
 local function fillLogicPanel(panel, widget, grabFocus)
-    local grayColor = lcd.themeColor(14)
+    local grayColor = L.defaultWidgetTitleColor
     local lcdWidth = system.getVersion().lcdWidth
     if panel == nil then return end
     if grabFocus == nil then grabFocus = true end
@@ -98,11 +99,10 @@ local function fillLogicPanel(panel, widget, grabFocus)
     local caseTexts = {} -- a list of all the "Case%d" staticTextField
     -- hightlight or normalizes all the case based on the logic conditions
     local function highlightValidCase()
-        local defaultColor = grayColor
-        local highlightColor = lcd.darkMode() and lcd.themeColor(THEME_DEFAULT_COLOR) or lcd.color(BLACK)
+        local highlightColor = lcd.RGB(0x88, 0xC0, 0x18)
         local match = widget.logics:matchIndex(widget.value)
         for j, staticText in pairs(caseTexts) do
-            staticText:color(j == match and highlightColor or defaultColor)
+            staticText:color(j == match and highlightColor or grayColor)
         end
     end
     if widget.useBackgroung and count > 0 then
@@ -156,7 +156,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
                 function() return widget.logics:get(i).color end,
                 function(newValue) widget.logics:get(i).color = newValue end)
             form.addColorField(line, slots[4],
-                function() return widget.logics:get(i).bgcolor or lcd.themeColor(THEME_DEFAULT_BGCOLOR) end,
+                function() return widget.logics:get(i).bgcolor or L.defaultWidgetBgColor end,
                 function(newValue) widget.logics:get(i).bgcolor = newValue end)
         elseif widget.useBackgroung then
             -- small screen both colors on new line

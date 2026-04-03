@@ -7,6 +7,10 @@ local WIDGET_TYPE_SOURCE = 1
 local WIDGET_TYPE_SENSOR = 2
 local ethosVersion = system.getVersion()
 local runningInSimulator = ethosVersion.simulation
+-- widget backgrounds
+local widgetBgColorDark = tonumber(ethosVersion.major .. ethosVersion.minor) >= 261 and lcd.RGB(40, 48, 56) or lcd.RGB(0x29, 0x28, 0x29)
+local widgetBgColorLight = tonumber(ethosVersion.major .. ethosVersion.minor) >= 261 and lcd.RGB(214, 214, 214) or lcd.RGB(0xF6, 0xF3, 0xF7)
+
 
 system.compile("lib/init.lua")
 local L = assert(loadfile("lib/init.luac", "b")({
@@ -16,14 +20,15 @@ local L = assert(loadfile("lib/init.luac", "b")({
     deleteIcon = lcd.loadMask("bitmaps/mask_delete_icon.png"),
     isUTF8Compatible=tonumber(ethosVersion.major .. ethosVersion.minor) >= 17,
     MAX_CONDITIONS = 5, -- be careful for storage(read/write) if you change this
+    defaultWidgetTitleColor = lcd.RGB(0xB0, 0xB0, 0xB0),
+    defaultColor = lcd.RGB(0xF8, 0xFC, 0xF8),
+    defaultBgColor = lcd.RGB(0x20, 0x20, 0x20),
+    defaultWidgetBgColor = widgetBgColorDark
 }, "L")) -- here "L" is the namespace used in the lib files
 
 local __ = L.translate
 local log = L.log
 
--- widget background
-local bgDarkMode = lcd.RGB(0x29, 0x28, 0x29)
-local bgLightMode = lcd.RGB(0xF6, 0xF3, 0xF7)
 
 ---this is the create method for the Color Value Widget
 ---@return table
@@ -134,8 +139,8 @@ end
 
 local function paint(widget)
     local textFocusBgColor = lcd.darkMode() and lcd.themeColor(THEME_FOCUS_BGCOLOR) or lcd.color(COLOR_WHITE)
-    local titleColor = lcd.hasFocus() and textFocusBgColor or lcd.themeColor(14)
-    local defaultColor = lcd.hasFocus() and textFocusBgColor or lcd.themeColor(THEME_DEFAULT_COLOR)
+    local titleColor = lcd.hasFocus() and textFocusBgColor or L.defaultWidgetTitleColor
+    local defaultColor = lcd.hasFocus() and textFocusBgColor or L.defaultColor
     local warningColor = lcd.themeColor(THEME_WARNING_COLOR)
     local _
     local titleHeight = 0
@@ -171,7 +176,7 @@ local function paint(widget)
     end
     if mayUseBackground and matchingCase.bgcolor then
 
-        if (lcd.darkMode() and matchingCase.bgcolor ~= bgDarkMode) or (not lcd.darkMode() and  matchingCase.bgcolor ~= bgLightMode) then
+        if (lcd.darkMode() and matchingCase.bgcolor ~= widgetBgColorDark) or (not lcd.darkMode() and  matchingCase.bgcolor ~= widgetBgColorLight) then
             lcd.color(matchingCase.bgcolor)
             lcd.drawFilledRectangle(0, 0, w, h)
             minmaxColor = matchingCase.fgColor
@@ -331,6 +336,12 @@ local function menu(widget)
 end
 
 local function build(widget)
+    local isDarkMode = lcd.darkMode()
+    L.defaultWidgetTitleColor = isDarkMode and lcd.RGB(0xB0, 0xB0, 0xB0) or lcd.RGB(0x58, 0x54, 0x58)
+    L.defaultColor = isDarkMode and lcd.RGB(0xF8, 0xFC, 0xF8) or lcd.RGB(0x58, 0x54, 0x58)
+    L.defaultBgColor = isDarkMode and lcd.RGB(0x20, 0x20, 0x20) or lcd.RGB(0xF0, 0xF0, 0xF0)
+    L.defaultWidgetBgColor = isDarkMode and widgetBgColorDark or widgetBgColorLight
+
     local locale = system.getLocale()
     if system.getLocale() ~= L.getLocale() then
         L.changeLocale(locale)

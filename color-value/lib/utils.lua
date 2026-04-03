@@ -118,7 +118,7 @@ function lcd.unRGB(rgba)
     ((rgba & 0x0000001f) >> 0) * 8,
     ((rgba & 0x0f000000) >> 24) * 16
 end
-for i=0,24, 1 do
+for i=0,17, 1 do
     local r,g,b,a = lcd.unRGB(lcd.themeColor(i))
     print(string.format("Theme %s #%02x%02x%02x%02x", i, r, g, b, a))
 end
