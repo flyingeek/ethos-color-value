@@ -284,5 +284,5 @@ return {
     ["OPE_MORE_OR_EQUAL"] = OPE_MORE_OR_EQUAL,
     ["OPE_EQUAL"] = OPE_EQUAL,
     LogicCases = LogicCases,
-    count_b
+    count_b = count_b,
 }
