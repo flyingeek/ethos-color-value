@@ -1,7 +1,7 @@
 local scriptVersion = "1.1.2-dev"
 local scriptAuthor = "github.com/flyingeek"
 local githubRepo = "ethos-color-value"
-local refreshRate = 1/10 -- 10Hz
+local refreshRate = 1 / 10 -- 10Hz
 local defaultShowMinMax = true
 local WIDGET_TYPE_SOURCE = 1
 local WIDGET_TYPE_SENSOR = 2
@@ -12,9 +12,8 @@ local widgetBgColorDark = ethosVersion.major >= 26 and lcd.RGB(40, 48, 56) or lc
 local widgetBgColorLight = ethosVersion.major >= 26 and lcd.RGB(214, 214, 214) or lcd.RGB(0xF6, 0xF3, 0xF7)
 local widgetMargin = 4
 local widgetTitleFont = FONT_S
-local valueFonts = {FONT_XXL, FONT_XL, FONT_L, FONT_M or FONT_STD}
-local minmaxFonts = {FONT_M or FONT_STD, FONT_S, FONT_XS}
-local minmaxFontsSmall = {FONT_M or FONT_STD, FONT_S} -- for widget width < 256
+local valueFonts = { FONT_XXL, FONT_XL, FONT_L, FONT_M or FONT_STD, FONT_S }
+local minmaxFonts = { FONT_M or FONT_STD, FONT_S, FONT_XS }
 
 system.compile("lib/init.lua")
 local L = assert(loadfile("lib/init.luac", "b")({
@@ -22,7 +21,7 @@ local L = assert(loadfile("lib/init.luac", "b")({
     defaultSourcePrecision = 0,
     infoIcon = lcd.loadMask("bitmaps/icon_info.png"),
     deleteIcon = lcd.loadMask("bitmaps/mask_delete_icon.png"),
-    isUTF8Compatible=ethosVersion.major >= 26,
+    isUTF8Compatible = ethosVersion.major >= 26,
     MAX_CONDITIONS = 5, -- be careful for storage(read/write) if you change this
     defaultWidgetTitleColor = lcd.RGB(0xB0, 0xB0, 0xB0),
     defaultColor = lcd.RGB(0xF8, 0xFC, 0xF8),
@@ -37,22 +36,22 @@ local log = L.log
 ---this is the create method for the Color Value Widget
 ---@return table
 local function createTypeSource()
-     local data = {
+    local data = {
         -- configure parameters (saved in storage)
-        source=nil,
-        logics=L.LogicCases:new(),
-        showTitle=true,
-        showMinMax=defaultShowMinMax,
-        type=WIDGET_TYPE_SOURCE,
-        useBackgroung=false,
-        useState=false,
+        source = nil,
+        logics = L.LogicCases:new(),
+        showTitle = true,
+        showMinMax = defaultShowMinMax,
+        type = WIDGET_TYPE_SOURCE,
+        useBackgroung = false,
+        useState = false,
         -- output values
-        value=nil,
-        minimum=nil,
-        maximum=nil,
-        telemetryState=nil,
+        value = nil,
+        minimum = nil,
+        maximum = nil,
+        telemetryState = nil,
         -- others
-        timestamp = 0, -- timestamp of last update per widget instance
+        timestamp = 0,           -- timestamp of last update per widget instance
         updateNextWakeup = true, -- when true, forces update of the widget in the next wakeup (used after configuration changes in write function or on init)
         -- computed parameters for paint (not saved in storage)
         width = nil,
@@ -64,23 +63,23 @@ local function createTypeSource()
         -- valueParameters
         valueWidth = 0,
         valueHeight = 0,
-        valueLineHeight=0,
-        valueFont=0,
-        valueColor=0,
-        valueY=0,
+        valueLineHeight = 0,
+        valueFontIndex = 1,
+        valueColor = 0,
+        valueY = 0,
         -- minmax Parameters
-        minmaxFont=0,
-        minValueY=0,
-        minValueHeight=0,
-        minValueWidth=0,
-        maxValueHeight=0,
-        maxValueWidth=0,
-        formattedMinValue="",
-        formattedMaxValue="",
-     }
-     lcd.font(widgetTitleFont)
-     data.titleLineHeight = select(2, lcd.getTextSize("T"))
-     return data
+        minmaxFontIndex = 1,
+        minValueY = 0,
+        minValueHeight = 0,
+        minValueWidth = 0,
+        maxValueHeight = 0,
+        maxValueWidth = 0,
+        formattedMinValue = "",
+        formattedMaxValue = "",
+    }
+    lcd.font(widgetTitleFont)
+    data.titleLineHeight = select(2, lcd.getTextSize("T"))
+    return data
 end
 
 ---this is the create method for the Telemetry Value Widget
@@ -109,7 +108,7 @@ local function configure(widget)
         function() return widget.source end,
         function(newValue)
             if newValue ~= widget.source then
-                widget.source =  newValue
+                widget.source = newValue
                 widget.logics = L.LogicCases:new(newValue)
                 widget.showMinMax = defaultShowMinMax
                 form.clear()
@@ -126,16 +125,29 @@ local function configure(widget)
     end
     if L.isSensor(widget.source) then
         line = form.addLine(__("showMinMax"))
-        form.addBooleanField(line, nil, function() return widget.showMinMax end, function(newValue) widget.showMinMax = newValue end)
+        form.addBooleanField(line, nil, function() return widget.showMinMax end,
+            function(newValue) widget.showMinMax = newValue end)
     end
     line = form.addLine(__("showBackgroundColor"))
-    form.addBooleanField(line, nil, function() return widget.useBackgroung end, function(newValue) widget.useBackgroung = newValue L.fillLogicPanel(panel, widget, false) end)
+    form.addBooleanField(line, nil, function() return widget.useBackgroung end,
+        function(newValue)
+            widget.useBackgroung = newValue
+            L.fillLogicPanel(panel, widget, false)
+        end)
 
     line = form.addLine(__("showCustomStates"))
-    form.addBooleanField(line, nil, function() return widget.useState end, function(newValue) widget.useState = newValue  L.fillLogicPanel(panel, widget, false) end)
+    form.addBooleanField(line, nil, function() return widget.useState end,
+        function(newValue)
+            widget.useState = newValue
+            L.fillLogicPanel(panel, widget, false)
+        end)
 
     line = form.addLine(__("showTitle"))
-    form.addBooleanField(line, nil, function() return widget.showTitle end, function(newValue) widget.showTitle = newValue L.fillLogicPanel(panel, widget, false) end)
+    form.addBooleanField(line, nil, function() return widget.showTitle end,
+        function(newValue)
+            widget.showTitle = newValue
+            L.fillLogicPanel(panel, widget, false)
+        end)
     local panel = form.addExpansionPanel(__("infoPanelTitle"))
     panel:open(false)
     line = panel:addLine(__("infoPanelGitHubRepo"))
@@ -181,31 +193,49 @@ local function updateParameters(widget)
     if widget.matchingCaseIndex then
         local matchingCase = widget.logics:get(widget.matchingCaseIndex)
         fgColor = matchingCase.color
-        if widget.useState and matchingCase.text~="" then
+        if widget.useState and matchingCase.text ~= "" then
             output = matchingCase:getText(widget.source)
         end
     end
-    widget.valueWidth, widget.valueHeight, widget.valueLineHeight, widget.valueFont = L.bestFit(output, valueFonts, w - (widgetMargin * 2), h - widgetMargin - titleHeight)
+    -- optimize by restricting lookup from current size - 2 to smallest size
+    local searchIndex = widget.valueFontIndex or 1
+    if searchIndex > 2 then
+        searchIndex = searchIndex - 2
+    elseif searchIndex > 1 then
+        searchIndex = searchIndex - 1
+    end
+    widget.valueWidth, widget.valueHeight, widget.valueLineHeight, widget.valueFontIndex = L.bestFit(output, valueFonts,
+        w - (widgetMargin * 2), h - widgetMargin - titleHeight, "0", searchIndex)
     widget.valueColor = fgColor
     widget.valueY = (widgetMargin + titleHeight - widget.valueHeight + h) / 2
 
     --- MIN/MAX ---
     if widget.showMinMax and L.isSensor(widget.source) and widget.minimum ~= nil and widget.maximum ~= nil then
-        widget.formattedMinValue = L.formatWithDecimals(widget.minimum, widget.source).."↓"
-        widget.formattedMaxValue = L.formatWithDecimals(widget.maximum, widget.source).."↑"
+        widget.formattedMinValue = L.formatWithDecimals(widget.minimum, widget.source) .. "↓"
+        widget.formattedMaxValue = L.formatWithDecimals(widget.maximum, widget.source) .. "↑"
         local maxValueY = widgetMargin
         -- we want minValueY + minValueHeight < valueY and we consider minValueHeight == maxValueHeight
-        local maxHeight = (widget.valueY/2) - ((3 * widgetMargin)/4)
-        -- find and set best font size for the widget's size
-        local allowedSize = widget.width < 256 and minmaxFontsSmall or minmaxFonts
-        local minValueWidth, minValueHeight, bestFont = L.bestOverlap(widget.formattedMinValue, allowedSize, (widget.width - widget.valueWidth)/2 , maxHeight, "0")
-        local maxValueWidth, maxValueHeight = lcd.getTextSize(L.isUTF8Compatible and widget.formattedMaxValue or L.replaceUTF8(widget.formattedMaxValue, "0"))
-        widget.minValueY = maxValueY + maxValueHeight + (widgetMargin/2)
+        local maxHeight = (widget.valueY / 2) - ((3 * widgetMargin) / 4)
+        -- optimize by restricting lookup from current size - 1 to smallest size
+        searchIndex = widget.minmaxFontIndex or 1
+        if searchIndex > 1 then
+            searchIndex = searchIndex - 1
+        end
+        local endSearchIndex = #minmaxFonts
+        if widget.width >= 256 then
+            endSearchIndex = endSearchIndex -
+                1 -- restrict allowed fonts (no FONT_XS) for wide widgets for readability reasons
+        end
+        local minValueWidth, minValueHeight, bestFontIndex = L.bestOverlap(widget.formattedMinValue, minmaxFonts,
+            (widget.width - widget.valueWidth) / 2, maxHeight, "0", searchIndex, endSearchIndex)
+        local maxValueWidth, maxValueHeight = lcd.getTextSize(L.isUTF8Compatible and widget.formattedMaxValue or
+            L.replaceUTF8(widget.formattedMaxValue, "0"))
+        widget.minValueY = maxValueY + maxValueHeight + (widgetMargin / 2)
         widget.minValueHeight = minValueHeight
         widget.minValueWidth = minValueWidth
         widget.maxValueHeight = maxValueHeight
         widget.maxValueWidth = maxValueWidth
-        widget.minmaxFont = bestFont
+        widget.minmaxFontIndex = bestFontIndex
     end
 end
 
@@ -223,8 +253,8 @@ local function wakeup(widget)
     if widget.source and newTimestamp >= widget.timestamp + refreshRate then
         widget.timestamp = newTimestamp
         local newValue = widget.source:value()
-        local newMinimum = widget.source:value({options=OPTION_SENSOR_MIN})
-        local newMaximum = widget.source:value({options=OPTION_SENSOR_MAX})
+        local newMinimum = widget.source:value({ options = OPTION_SENSOR_MIN })
+        local newMaximum = widget.source:value({ options = OPTION_SENSOR_MAX })
         local newTelemetryState = widget.source:state()
         if widget.value ~= newValue or widget.minimum ~= newMinimum or widget.maximum ~= newMaximum then
             widget.value = newValue
@@ -256,12 +286,12 @@ local function paint(widget)
     if widget.matchingCaseIndex then
         matchingCase = widget.logics:get(widget.matchingCaseIndex)
     end
-    if widget.useState and matchingCase and matchingCase.text~="" then
+    if widget.useState and matchingCase and matchingCase.text ~= "" then
         outputValues = matchingCase:getText(widget.source)
     end
-    if not(widget.value ~= nil and widget.telemetryState == false and L.isSensor(widget.source)) and widget.useBackgroung and matchingCase and matchingCase.bgcolor then
+    if not (widget.value ~= nil and widget.telemetryState == false and L.isSensor(widget.source)) and widget.useBackgroung and matchingCase and matchingCase.bgcolor then
         local bgcolor = matchingCase.bgcolor
-        if not lcd.hasFocus() and ((lcd.darkMode() and bgcolor ~= widgetBgColorDark) or (not lcd.darkMode() and  bgcolor ~= widgetBgColorLight)) then
+        if not lcd.hasFocus() and ((lcd.darkMode() and bgcolor ~= widgetBgColorDark) or (not lcd.darkMode() and bgcolor ~= widgetBgColorLight)) then
             lcd.color(bgcolor)
             lcd.drawFilledRectangle(0, 0, w, h)
             minmaxColor = matchingCase.color
@@ -276,38 +306,38 @@ local function paint(widget)
         end
         if titles then
             local titleLineHeight = widget.titleLineHeight
-            for i=1, #titles do
-                lcd.drawText(w/2, margin + (i - 1) * titleLineHeight, titles[i], TEXT_CENTERED)
+            for i = 1, #titles do
+                lcd.drawText(w / 2, margin + (i - 1) * titleLineHeight, titles[i], TEXT_CENTERED)
             end
         else
-            lcd.drawText(w/2, margin, widget.source and widget.source:name() or "---", TEXT_CENTERED)
+            lcd.drawText(w / 2, margin, widget.source and widget.source:name() or "---", TEXT_CENTERED)
         end
     end
 
     local valueY = widget.valueY
     lcd.color(lcd.hasFocus() and focusBgColor or widget.valueColor)
-    lcd.font(widget.valueFont)
+    lcd.font(valueFonts[widget.valueFontIndex])
     if outputValues then
         local lineHeight = widget.valueLineHeight
-        for i=1, #outputValues do
-            lcd.drawText(w/2, valueY + (i - 1) * lineHeight, outputValues[i], TEXT_CENTERED)
+        for i = 1, #outputValues do
+            lcd.drawText(w / 2, valueY + (i - 1) * lineHeight, outputValues[i], TEXT_CENTERED)
         end
     else
-        lcd.drawText(w/2, valueY, widget.source:stringValue(), TEXT_CENTERED)
+        lcd.drawText(w / 2, valueY, widget.source:stringValue(), TEXT_CENTERED)
     end
 
     -- Min/Max Values output
     lcd.color(lcd.hasFocus() and focusBgColor or minmaxColor)
     if widget.showMinMax and L.isSensor(widget.source) and widget.minimum ~= nil and widget.maximum ~= nil then
         local maxValueY = margin
-        lcd.font(widget.minmaxFont)
+        lcd.font(minmaxFonts[widget.minmaxFontIndex])
         lcd.drawText(w - margin, maxValueY, widget.formattedMaxValue, TEXT_RIGHT)
         lcd.drawText(w - margin, widget.minValueY, widget.formattedMinValue, TEXT_RIGHT)
         lcd.drawLine(
             w - margin - math.max(widget.maxValueWidth, widget.minValueWidth) - margin, --x1
-            maxValueY + widget.maxValueHeight,--y1
-            w - margin,--x2
-            maxValueY + widget.maxValueHeight --y2
+            maxValueY + widget.maxValueHeight,                                          --y1
+            w - margin,                                                                 --x2
+            maxValueY + widget.maxValueHeight                                           --y2
         )
     end
 end
@@ -319,9 +349,9 @@ local function read(widget)
     widget.showTitle = storage.read("showTitle")
     -- backward compatibility v1
     value = storage.read("logics")
-    if value and type(value) == "string" and value ~="" then
+    if value and type(value) == "string" and value ~= "" then
         widget.logics = L.LogicCases:new():loadStorageString(value)
-        upgradeLogicsFromV1 =true
+        upgradeLogicsFromV1 = true
     end
     widget.showMinMax = storage.read("showMinMax")
     widget.type = storage.read("type")
@@ -335,15 +365,15 @@ local function read(widget)
         -- this is an upgrade for title of 1.1.0-rc1 and 1.1.0-rc2
         value = storage.read("title")
         if type(value) == "string" then
-            for i=1,widget.logics:count() do
+            for i = 1, widget.logics:count() do
                 local logic = widget.logics:get(i)
                 logic.title = value
             end
         end
     else
-        for i=1,L.MAX_CONDITIONS do
+        for i = 1, L.MAX_CONDITIONS do
             value = storage.read(string.format("logic%s", i))
-            if value and type(value) == "string" and value ~="" then
+            if value and type(value) == "string" and value ~= "" then
                 widget.logics:add(L.LogicCase:new():loadStorageString(value))
             end
         end
@@ -361,7 +391,7 @@ local function write(widget)
     storage.write("useBackgroung", widget.useBackgroung)
     storage.write("useState", widget.useState)
     -- version 1.1 rc3
-    for i=1,L.MAX_CONDITIONS do
+    for i = 1, L.MAX_CONDITIONS do
         if widget.logics then
             local logic = widget.logics:get(i)
             if logic then
@@ -379,39 +409,42 @@ local function menu(widget)
         if not widget.showMinMax and L.isSensor(widget.source) then
             if widget.minimum then
                 table.insert(menuData, {
-                        string.format(__("minimumMenuASCII"),
+                    string.format(__("minimumMenuASCII"),
                         L.formatWithDecimals(widget.minimum, widget.source),
                         widget.source:stringUnit()),
-                        function() end
-                    })
+                    function() end
+                })
             end
             if widget.maximum then
-                table.insert(menuData,{
-                        string.format(__("maximumMenuASCII"),
+                table.insert(menuData, {
+                    string.format(__("maximumMenuASCII"),
                         L.formatWithDecimals(widget.maximum, widget.source),
                         widget.source:stringUnit()),
-                        function() end
-                    })
+                    function() end
+                })
             end
         end
         if L.isSensor(widget.source) or L.isTimer(widget.source) then
             local openPageParameters
             if tonumber(ethosVersion.major .. ethosVersion.minor) >= 26 then
                 if L.isTimer(widget.source) then
-                    openPageParameters = {timer=widget.source:member()}
+                    openPageParameters = { timer = widget.source:member() }
                 elseif L.isSensor(widget.source) then
-                    openPageParameters = {sensor=widget.source:member()}
+                    openPageParameters = { sensor = widget.source:member() }
                 end
                 if openPageParameters then
-                    table.insert(menuData,{
+                    table.insert(menuData, {
                         string.format(__("editMenuASCII"), widget.source:name()),
                         function() system.openPage(openPageParameters) end
                     })
                 end
             end
-            table.insert(menuData,{
+            table.insert(menuData, {
                 string.format(__("resetMenuASCII"), widget.source:name()),
-                function() widget.source:reset() widget.value = nil end
+                function()
+                    widget.source:reset()
+                    widget.value = nil
+                end
             })
         end
     end
@@ -420,10 +453,14 @@ end
 
 local function build(widget)
     local isDarkMode = lcd.darkMode()
-    L.defaultWidgetTitleColor = THEME_SECONDARY_COLOR and lcd.themeColor(THEME_SECONDARY_COLOR) or (isDarkMode and lcd.RGB(0xB0, 0xB0, 0xB0) or lcd.RGB(0x58, 0x54, 0x58))
-    L.defaultColor = THEME_PRIMARY_COLOR and lcd.themeColor(THEME_PRIMARY_COLOR) or (isDarkMode and lcd.RGB(0xF8, 0xFC, 0xF8) or lcd.RGB(0x58, 0x54, 0x58))
-    L.defaultBgColor = THEME_SECONDARY_BGCOLOR and lcd.themeColor(THEME_SECONDARY_BGCOLOR) or isDarkMode and lcd.RGB(0x20, 0x20, 0x20) or lcd.RGB(0xF0, 0xF0, 0xF0)
-    L.defaultWidgetBgColor = THEME_PRIMARY_BGCOLOR and lcd.themeColor(THEME_PRIMARY_BGCOLOR) or (isDarkMode and widgetBgColorDark or widgetBgColorLight)
+    L.defaultWidgetTitleColor = THEME_SECONDARY_COLOR and lcd.themeColor(THEME_SECONDARY_COLOR) or
+        (isDarkMode and lcd.RGB(0xB0, 0xB0, 0xB0) or lcd.RGB(0x58, 0x54, 0x58))
+    L.defaultColor = THEME_PRIMARY_COLOR and lcd.themeColor(THEME_PRIMARY_COLOR) or
+        (isDarkMode and lcd.RGB(0xF8, 0xFC, 0xF8) or lcd.RGB(0x58, 0x54, 0x58))
+    L.defaultBgColor = THEME_SECONDARY_BGCOLOR and lcd.themeColor(THEME_SECONDARY_BGCOLOR) or
+        isDarkMode and lcd.RGB(0x20, 0x20, 0x20) or lcd.RGB(0xF0, 0xF0, 0xF0)
+    L.defaultWidgetBgColor = THEME_PRIMARY_BGCOLOR and lcd.themeColor(THEME_PRIMARY_BGCOLOR) or
+        (isDarkMode and widgetBgColorDark or widgetBgColorLight)
     widget.width, widget.height = lcd.getWindowSize()
     local locale = system.getLocale()
     if system.getLocale() ~= L.getLocale() then
@@ -432,8 +469,34 @@ local function build(widget)
 end
 
 local function init()
- system.registerWidget({key="fgCVMM", name=nameTypeSource, create=createTypeSource, wakeup=wakeup, paint=paint, build=build, configure=configure,  read=read, write=write, menu=menu, title=false})
- system.registerWidget({key="fgCSMM", name=nameTypeSensor, create=createTypeSensor, wakeup=wakeup, paint=paint, build=build, configure=configure,  read=read, write=write, menu=menu, title=false})
+    system.registerWidget({
+        key = "fgCVMM",
+        name = nameTypeSource,
+        create = createTypeSource,
+        wakeup = wakeup,
+        paint =
+            paint,
+        build = build,
+        configure = configure,
+        read = read,
+        write = write,
+        menu = menu,
+        title = false
+    })
+    system.registerWidget({
+        key = "fgCSMM",
+        name = nameTypeSensor,
+        create = createTypeSensor,
+        wakeup = wakeup,
+        paint =
+            paint,
+        build = build,
+        configure = configure,
+        read = read,
+        write = write,
+        menu = menu,
+        title = false
+    })
 end
 
-return {init=init}
+return { init = init }

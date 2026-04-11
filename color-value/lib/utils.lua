@@ -13,7 +13,7 @@ local ANSI_CYAN = "\27[0;36m"
 local function log(text, ansiColor)
     if not ansiColor then ansiColor = ANSI_CYAN end -- black is unreadable on ethos.studio1247.com
     local ANSI_RESET = "\27[0m"
-    print(ansiColor.."[cv]"..tostring(text)..ANSI_RESET)
+    print(ansiColor .. "[cv]" .. tostring(text) .. ANSI_RESET)
 end
 
 local function isSensor(source)
@@ -32,25 +32,28 @@ local function replaceUTF8(text, altChar)
 end
 
 -- set the font to fit text into a box (fit maxWidth and fit maxHeight) maxWidth or maxHeight may be nil
-local function bestFit(strOrTable, fontIndexList, maxWidth, maxHeight, altChar)
-    local boxW, boxH, bestFont, lineH
+local function bestFit(strOrTable, fontIndexList, maxWidth, maxHeight, altChar, startIndex, endIndex)
+    local boxW, boxH, bestFontIndex, lineH
     local overflow = true
     local lineCount = 1
     local sType = 0 -- string
+    startIndex = startIndex or 1
+    endIndex = endIndex or #fontIndexList
     if type(strOrTable) == "table" then
         sType = 1
         lineCount = #strOrTable
     end
 
-    for _, font in pairs(fontIndexList) do
+    for index = startIndex, endIndex do
+        local font = fontIndexList[index]
         local line
         boxW = 0
         boxH = 0
         lineH = 0
         overflow = true
         lcd.font(font)
-        bestFont = font
-        for i=1, lineCount do
+        bestFontIndex = index
+        for i = 1, lineCount do
             if i == 1 and sType == 0 then
                 line = strOrTable
             else
@@ -69,33 +72,36 @@ local function bestFit(strOrTable, fontIndexList, maxWidth, maxHeight, altChar)
             break
         end
     end
-    return boxW, boxH, lineH, bestFont, overflow
+    return boxW, boxH, lineH, bestFontIndex, overflow
 end
 
 -- set the font for the best overlap (fit maxWidth OR fit maxHeight)
-local function bestOverlap(str, fontList, maxWidth, maxHeight, altChar)
+local function bestOverlap(str, fontList, maxWidth, maxHeight, altChar, startIndex, endIndex)
     local text = str
     if not isUTF8Compatible then
         text = replaceUTF8(str, altChar)
     end
-    local tw, th, bestFont
+    local tw, th, bestFontIndex
     local overflow = true
-    for _, font in pairs(fontList) do
+    startIndex = startIndex or 1
+    endIndex = endIndex or #fontList
+    for i = startIndex, endIndex do
+        local font = fontList[i]
         lcd.font(font)
-        bestFont = font
+        bestFontIndex = i
         tw, th = lcd.getTextSize(text)
         if th < maxHeight or tw < maxWidth then
             overflow = false
             break
         end
     end
-    return tw, th, bestFont, overflow
+    return tw, th, bestFontIndex, overflow
 end
 
 local function formatWithDecimals(value, source)
     return string.format("%.0" .. (source:decimals() or defaultSourcePrecision) .. "f", value or 0)
 end
-local function trim (s)
+local function trim(s)
     if not s then return "" end
     return tostring(s):gsub("^%s*(.-)%s*$", "%1")
 end
@@ -103,16 +109,18 @@ end
 ---@param fn (function)
 ---@return any
 local function confirm(fn, message, width)
-    return function() return form.openDialog({
-        title=string.format(__("confirmTitle")),
-        message=message,
-        width=width,
-        buttons={
-            {label=__("no"), action=function() return true end},
-            {label=__("yes"), action=function() return fn() or true end},
-        },
-        options=TEXT_LEFT
-    }) end
+    return function()
+        return form.openDialog({
+            title = string.format(__("confirmTitle")),
+            message = message,
+            width = width,
+            buttons = {
+                { label = __("no"),  action = function() return true end },
+                { label = __("yes"), action = function() return fn() or true end },
+            },
+            options = TEXT_LEFT
+        })
+    end
 end
 --[[
 --I used this to find the theme color of titleColor (14)
@@ -134,35 +142,35 @@ local function wrap(str, limit, indent, indent1)
     indent = indent or ""
     indent1 = indent1 or indent
     limit = limit or 72
-    local here = 1-#indent1
+    local here = 1 - #indent1
     local function check(sp, st, word, fi)
         if fi - here > limit then
             here = st - #indent
-            return "\n"..indent..word
+            return "\n" .. indent .. word
         end
     end
-    return indent1..str:gsub("(%s+)()(%S+)()", check)
+    return indent1 .. str:gsub("(%s+)()(%S+)()", check)
 end
 local function reflow(str, limit, indent, indent1)
     return (str:gsub("[^\n]+",
-                function(line)
-                    return wrap(line, limit, indent, indent1)
-                end))
+        function(line)
+            return wrap(line, limit, indent, indent1)
+        end))
 end
 
 return {
-    isSensor=isSensor,
-    isTimer=isTimer,
-    sourceExists=sourceExists,
-    replaceUTF8=replaceUTF8,
-    bestFit=bestFit,
-    bestOverlap=bestOverlap,
-    formatWithDecimals=formatWithDecimals,
+    isSensor = isSensor,
+    isTimer = isTimer,
+    sourceExists = sourceExists,
+    replaceUTF8 = replaceUTF8,
+    bestFit = bestFit,
+    bestOverlap = bestOverlap,
+    formatWithDecimals = formatWithDecimals,
     confirm = confirm,
     trim = trim,
-    log=log,
-    ANSI_RED=ANSI_RED,
-    ANSI_GREEN=ANSI_GREEN,
-    ANSI_YELLOW=ANSI_YELLOW,
-    reflow=reflow,
+    log = log,
+    ANSI_RED = ANSI_RED,
+    ANSI_GREEN = ANSI_GREEN,
+    ANSI_YELLOW = ANSI_YELLOW,
+    reflow = reflow,
 }
