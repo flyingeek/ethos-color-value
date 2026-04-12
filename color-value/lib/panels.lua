@@ -12,7 +12,7 @@ local function positionLabel(line, x, label, color)
     return field, rect
 end
 local function fillLogicPanel(panel, widget, grabFocus)
-    local grayColor = L.defaultWidgetTitleColor
+    local secondaryColor = L.secondaryColor
     local lcdWidth = system.getVersion().lcdWidth
     if panel == nil then return end
     if grabFocus == nil then grabFocus = true end
@@ -141,7 +141,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
         local highlightColor = lcd.RGB(0x88, 0xC0, 0x18)
         local match = widget.logics:matchIndex(widget.value)
         for j, staticText in pairs(caseTexts) do
-            staticText:color(j == match and highlightColor or grayColor)
+            staticText:color(j == match and highlightColor or secondaryColor)
         end
     end
     if widget.useBackgroung and count > 0 then
@@ -149,7 +149,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
         local explanation = __("colorHint")
         line = panel:addLine("", false)
         slots = form.getFieldSlots(line, { 0, explanation })
-        form.addStaticText(line, slots[2], explanation):color(grayColor)
+        form.addStaticText(line, slots[2], explanation):color(secondaryColor)
     end
     local choiceField -- the last choice
     local textField   -- the last textField
@@ -226,7 +226,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
         if widget.useState then
             if widget.showTitle then
                 line = panel:addLine("", false)
-                positionLabel(line, nil, __("title"), grayColor)
+                positionLabel(line, nil, __("title"), secondaryColor)
                 slots = form.getFieldSlots(line, { 0, tagButtonText })
                 form.addTextField(line, slots[1],
                     function() return widget.logics:get(i).title end,
@@ -234,7 +234,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
                 addTagButton(line, slots[2], i, "appendTitle")
             end
             line = panel:addLine("", i == count and count >= maxConditions)
-            positionLabel(line, nil, __("state"), grayColor)
+            positionLabel(line, nil, __("state"), secondaryColor)
             slots = form.getFieldSlots(line, { 0, tagButtonText })
             textField = form.addTextField(line, slots[1],
                 function() return widget.logics:get(i).text end,

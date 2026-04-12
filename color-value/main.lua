@@ -7,9 +7,9 @@ local WIDGET_TYPE_SOURCE = 1
 local WIDGET_TYPE_SENSOR = 2
 local ethosVersion = system.getVersion()
 local runningInSimulator = ethosVersion.simulation
--- widget backgrounds
-local widgetBgColorDark = ethosVersion.major >= 26 and lcd.RGB(40, 48, 56) or lcd.RGB(0x29, 0x29, 0x29)
-local widgetBgColorLight = ethosVersion.major >= 26 and lcd.RGB(214, 214, 214) or lcd.RGB(0xF6, 0xF3, 0xF7)
+-- widget backgrounds THEME_SECONDARY_BGCOLOR is inconsistent (light vs darkMode) and for Ethos 1.6 ETHOS constants are not exported
+local widgetBgColorDark = ethosVersion.major >= 26 and lcd.RGB(0x28, 0x30, 0x38) or lcd.RGB(0x29, 0x29, 0x29)
+local widgetBgColorLight = ethosVersion.major >= 26 and lcd.RGB(0xD6, 0xD6, 0xD6) or lcd.RGB(0xF6, 0xF3, 0xF7)
 local widgetMargin = 4
 local widgetTitleFont = FONT_S
 local valueFonts = { FONT_XXL, FONT_XL, FONT_L, FONT_M or FONT_STD, FONT_S }
@@ -24,12 +24,11 @@ local L = assert(loadfile("lib/init.luac", "b")({
     deleteIcon = lcd.loadMask("bitmaps/mask_delete_icon.png"),
     isUTF8Compatible = ethosVersion.major >= 26,
     needsDialogReflow = not (ethosVersion.major >= 26 or (ethosVersion.major == 1 and ethosVersion.minor == 6 and ethosVersion.revision >= 6)),
-    MAX_CONDITIONS = 5, -- be careful for storage(read/write) if you change this
-    defaultWidgetTitleColor = lcd.RGB(0xB0, 0xB0, 0xB0),
-    defaultColor = lcd.RGB(0xF8, 0xFC, 0xF8),
-    defaultBgColor = lcd.RGB(0x20, 0x20, 0x20),
-    defaultWidgetBgColor = widgetBgColorDark
-}, "L")) -- here "L" is the namespace used in the lib files
+    MAX_CONDITIONS = 5,       -- be careful for storage(read/write) if you change this
+    secondaryColor = 0,       -- set in build
+    defaultColor = 0,         -- set in build
+    defaultWidgetBgColor = 0, -- set in build
+}, "L"))                      -- here "L" is the namespace used in the lib files
 
 local __ = L.translate
 local log = L.log
@@ -180,7 +179,7 @@ local function updateParameters(widget)
     local titleCount = 0
     local titleHeight = 0
     if widget.showTitle then
-        local titleColor = L.defaultWidgetTitleColor
+        local titleColor = L.secondaryColor
         titleCount = 1
         titleHeight = widget.titleLineHeight
         if matchingCase then
@@ -471,14 +470,9 @@ end
 
 local function build(widget)
     local isDarkMode = lcd.darkMode()
-    L.defaultWidgetTitleColor = THEME_SECONDARY_COLOR and lcd.themeColor(THEME_SECONDARY_COLOR) or
-        (isDarkMode and lcd.RGB(0xB0, 0xB0, 0xB0) or lcd.RGB(0x58, 0x54, 0x58))
-    L.defaultColor = THEME_PRIMARY_COLOR and lcd.themeColor(THEME_PRIMARY_COLOR) or
-        (isDarkMode and lcd.RGB(0xF8, 0xFC, 0xF8) or lcd.RGB(0x58, 0x54, 0x58))
-    L.defaultBgColor = THEME_SECONDARY_BGCOLOR and lcd.themeColor(THEME_SECONDARY_BGCOLOR) or
-        isDarkMode and lcd.RGB(0x20, 0x20, 0x20) or lcd.RGB(0xF0, 0xF0, 0xF0)
-    L.defaultWidgetBgColor = THEME_PRIMARY_BGCOLOR and lcd.themeColor(THEME_PRIMARY_BGCOLOR) or
-        (isDarkMode and widgetBgColorDark or widgetBgColorLight)
+    L.secondaryColor = lcd.themeColor(THEME_SECONDARY_COLOR or 14)
+    L.defaultColor = lcd.themeColor(THEME_PRIMARY_COLOR or THEME_DEFAULT_COLOR)
+    L.defaultWidgetBgColor = isDarkMode and widgetBgColorDark or widgetBgColorLight
     widget.width, widget.height = lcd.getWindowSize()
     local locale = system.getLocale()
     if system.getLocale() ~= L.getLocale() then
@@ -493,8 +487,7 @@ local function init()
         name = nameTypeSource,
         create = createTypeSource,
         wakeup = wakeup,
-        paint =
-            paint,
+        paint = paint,
         build = build,
         configure = configure,
         read = read,
@@ -507,8 +500,7 @@ local function init()
         name = nameTypeSensor,
         create = createTypeSensor,
         wakeup = wakeup,
-        paint =
-            paint,
+        paint = paint,
         build = build,
         configure = configure,
         read = read,
