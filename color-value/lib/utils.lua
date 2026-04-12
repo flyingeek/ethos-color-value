@@ -37,39 +37,40 @@ end
 local function bestFit(strOrTable, fontIndexList, maxWidth, maxHeight, altChar, startIndex, endIndex)
     local boxW, boxH, bestFontIndex, lineH
     local overflow = true
-    local lineCount = 1
-    local sType = 0 -- string
+    local isTable = type(strOrTable) == "table"
     startIndex = startIndex or 1
     endIndex = endIndex or #fontIndexList
-    if type(strOrTable) == "table" then
-        sType = 1
-        lineCount = #strOrTable
-    end
 
     for index = startIndex, endIndex do
         local font = fontIndexList[index]
-        local line
         boxW = 0
         boxH = 0
         lineH = 0
         overflow = true
         lcd.font(font)
         bestFontIndex = index
-        for i = 1, lineCount do
-            if i == 1 and sType == 0 then
-                line = strOrTable
-            else
+        if isTable then
+            local i = 1
+            local line = strOrTable[i]
+            while line ~= nil do
+                if not isUTF8Compatible then
+                    line = replaceUTF8(line, altChar)
+                end
+                local w, h = lcd.getTextSize(line)
+                boxW = math.max(boxW, w)
+                boxH = boxH + h
+                lineH = math.max(lineH, h)
+                i = i + 1
                 line = strOrTable[i]
             end
-            if not isUTF8Compatible then
-                line = replaceUTF8(line, altChar)
-            end
+        else
+            local line = isUTF8Compatible and strOrTable or replaceUTF8(strOrTable, altChar)
             local w, h = lcd.getTextSize(line)
-            boxW = math.max(boxW, w)
-            boxH = boxH + h
-            lineH = math.max(lineH, h)
+            boxW = w
+            boxH = h
+            lineH = h
         end
-        if (maxWidth == nil or (maxWidth and boxW <= maxWidth)) and (maxHeight == nil or (maxHeight and boxH <= maxHeight)) then
+        if (maxWidth == nil or boxW <= maxWidth) and (maxHeight == nil or boxH <= maxHeight) then
             overflow = false
             break
         end
