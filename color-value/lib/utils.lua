@@ -4,6 +4,8 @@ local defaultSourcePrecision = L.defaultSourcePrecision
 local isUTF8Compatible = L.isUTF8Compatible
 ---@diagnostic disable-next-line: undefined-global
 local __ = L.translate
+---@diagnostic disable-next-line: undefined-global
+local needsDialogReflow = L.needsDialogReflow
 
 local ANSI_BLACK = "\27[1;30m"
 local ANSI_RED = "\27[1;31m"
@@ -152,6 +154,7 @@ local function wrap(str, limit, indent, indent1)
     return indent1 .. str:gsub("(%s+)()(%S+)()", check)
 end
 local function reflow(str, limit, indent, indent1)
+    if not needsDialogReflow then return str end
     return (str:gsub("[^\n]+",
         function(line)
             return wrap(line, limit, indent, indent1)

@@ -19,9 +19,11 @@ system.compile("lib/init.lua")
 local L = assert(loadfile("lib/init.luac", "b")({
     -- those parameters are accessible under the L namespace
     defaultSourcePrecision = 0,
+    runningInSimulator = runningInSimulator,
     infoIcon = lcd.loadMask("bitmaps/icon_info.png"),
     deleteIcon = lcd.loadMask("bitmaps/mask_delete_icon.png"),
     isUTF8Compatible = ethosVersion.major >= 26,
+    needsDialogReflow = not (ethosVersion.major >= 26 or (ethosVersion.major == 1 and ethosVersion.minor == 6 and ethosVersion.revision >= 6)),
     MAX_CONDITIONS = 5, -- be careful for storage(read/write) if you change this
     defaultWidgetTitleColor = lcd.RGB(0xB0, 0xB0, 0xB0),
     defaultColor = lcd.RGB(0xF8, 0xFC, 0xF8),
