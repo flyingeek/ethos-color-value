@@ -165,15 +165,7 @@ local function configure(widget)
     widget.focus = nil
 end
 
-local function enforceWarningColor(widget)
-    widget.valueColor = lcd.themeColor(THEME_WARNING_COLOR)
-    widget.titleColor = L.defaultWidgetTitleColor
-    widget.bgColor = nil
-    widget.minmaxColor = L.defaultColor
-end
-
 local function updateParameters(widget)
-    local timestamp = os.clock()
     local clearIndex
     local matchingCase = widget.matchingCaseIndex and widget.logics:get(widget.matchingCaseIndex) or nil
     --- Background Color---
@@ -276,10 +268,6 @@ local function updateParameters(widget)
         widget.minmaxFontIndex = bestFontIndex
         widget.minmaxColor = widget.bgColor and fgColor or L.defaultColor
     end
-    if runningInSimulator then
-        log(string.format("updateParameters: updatedwidget %s in %sms",
-            widget.source and widget.source:name() or "nil", (os.clock() - timestamp) * 1000))
-    end
 end
 
 local function wakeup(widget)
@@ -295,7 +283,6 @@ local function wakeup(widget)
             or widget.value ~= newValue
             or widget.minimum ~= newMinimum
             or widget.maximum ~= newMaximum
-            or (telemetryChanged and newTelemetryState) -- update if telemetry is back
         then
             widget.value = newValue
             widget.minimum = newMinimum
@@ -306,10 +293,7 @@ local function wakeup(widget)
         end
         if widget.updateNextWakeup or telemetryChanged then
             widget.telemetryState = newTelemetryState
-            if widget.telemetryState == false and widget.value ~= nil then
-                enforceWarningColor(widget)
-            end
-            lcd.invalidate()
+            lcd.invalidate() -- update colors if telemetry state changed
         end
         if widget.updateNextWakeup then widget.updateNextWakeup = false end
     end
@@ -318,7 +302,16 @@ end
 local function paint(widget)
     if not L.sourceExists(widget.source) then return end
     local focusBgColor = lcd.darkMode() and lcd.themeColor(THEME_FOCUS_BGCOLOR) or lcd.color(COLOR_WHITE)
+    local valueColor = widget.valueColor
+    local titleColor = widget.titleColor
     local bgColor = widget.bgColor
+    local minmaxColor = widget.minmaxColor
+    if widget.telemetryState == false and widget.value ~= nil and L.isSensor(widget.source) then
+        valueColor = lcd.themeColor(THEME_WARNING_COLOR)
+        titleColor = L.secondaryColor
+        bgColor = nil
+        minmaxColor = L.defaultColor
+    end
     local margin = widgetMargin
     local w, h = widget.width or 0, widget.height or 0
     local i, line
@@ -330,7 +323,7 @@ local function paint(widget)
     end
     if widget.showTitle then
         lcd.font(widgetTitleFont)
-        lcd.color(lcd.hasFocus() and focusBgColor or widget.titleColor)
+        lcd.color(lcd.hasFocus() and focusBgColor or titleColor)
         i = 1
         line = widget.titles[i]
         while line ~= nil do
@@ -341,7 +334,7 @@ local function paint(widget)
     end
 
     local valueY = widget.valueY
-    lcd.color(lcd.hasFocus() and focusBgColor or widget.valueColor)
+    lcd.color(lcd.hasFocus() and focusBgColor or valueColor)
     lcd.font(valueFonts[widget.valueFontIndex])
     i = 1
     line = widget.values[i]
@@ -352,7 +345,7 @@ local function paint(widget)
     end
 
     -- Min/Max Values output
-    lcd.color(lcd.hasFocus() and focusBgColor or widget.minmaxColor)
+    lcd.color(lcd.hasFocus() and focusBgColor or minmaxColor)
     if widget.showMinMax and L.isSensor(widget.source) and widget.minimum ~= nil and widget.maximum ~= nil then
         local maxValueY = margin
         lcd.font(minmaxFonts[widget.minmaxFontIndex])
