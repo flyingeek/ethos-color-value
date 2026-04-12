@@ -6,8 +6,6 @@ local sourceExists = L.sourceExists
 local trim = L.trim
 ---@diagnostic disable-next-line: undefined-global
 local formatWithDecimals = L.formatWithDecimals
----@diagnostic disable-next-line: undefined-global
-local function getWidgetBgColor() return L.defaultWidgetBgColor end
 
 local defaultThreshold = 0
 
@@ -112,7 +110,6 @@ function LogicCase:new(o)
     setmetatable(o, self)
     self.__index = self
     o.color = o.color or lcd.themeColor(THEME_WARNING_COLOR)
-    o.bgcolor = o.bgcolor or getWidgetBgColor()
     return o
 end
 
@@ -145,8 +142,8 @@ function LogicCase:__tostring()
 end
 
 function LogicCase:asStorageString()
-    return string.format("%s,%s,%s,%s,%s,%s", self.ope, self.threshold, self.color, self.bgcolor, escape(trim(self.text)),
-        escape(trim(self.title)))
+    return string.format("%s,%s,%s,%s,%s,%s", self.ope, self.threshold, self.color,
+        self.bgcolor, escape(trim(self.text)), escape(trim(self.title)))
 end
 
 function LogicCase:loadStorageString(s)
@@ -160,10 +157,11 @@ function LogicCase:loadStorageString(s)
     if t[1] ~= nil then self.ope = tonumber(t[1]) end
     if t[2] ~= nil then self.threshold = tonumber(t[2]) end
     if t[3] ~= nil then self.color = tonumber(t[3]) end
-    if t[4] ~= nil then self.bgcolor = tonumber(t[4]) end
+    if t[4] ~= nil then self.bgcolor = tonumber(t[4]) else self.bgcolor = nil end
     if t[5] ~= nil then self.text = decode(t[5]) end
     if t[6] ~= nil then self.title = decode(t[6]) end
-
+    ---@diagnostic disable-next-line: undefined-global
+    if self.bgcolor == L.defaultWidgetBgColor then self.bgcolor = nil end -- legacy migration
     return self
 end
 

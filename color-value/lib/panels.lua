@@ -215,8 +215,8 @@ local function fillLogicPanel(panel, widget, grabFocus)
                 function() return widget.logics:get(i).color end,
                 function(newValue) widget.logics:get(i).color = newValue end)
             form.addColorField(line, slots[2],
-                function() return widget.logics:get(i).bgcolor end,
-                function(newValue) widget.logics:get(i).bgcolor = newValue end)
+                function() return widget.logics:get(i).bgcolor or L.defaultWidgetBgColor end,
+                function(newValue) widget.logics:get(i).bgcolor = newValue == L.defaultWidgetBgColor and nil or newValue end)
         else
             -- single color (no background color)
             form.addColorField(line, slots[3],
