@@ -484,6 +484,7 @@ local function build(widget)
     if system.getLocale() ~= L.getLocale() then
         L.changeLocale(locale)
     end
+    widget.updateNextWakeup = true -- force update on next wakeup to apply colors and translations
 end
 
 local function init()
