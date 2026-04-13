@@ -1,4 +1,4 @@
-# 1.1.2-rc1
+# 1.1.2-rc2
 
 This is a pre-release version, no feature added, this is just about optimizing memory usage even if this is
 not a high demanding widget. The hotpath (wakeup, paint) has been rewritten to reduce at minimum table allocations.
