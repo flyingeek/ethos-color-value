@@ -116,6 +116,7 @@ local function configure(widget)
                 widget.source = newValue
                 widget.logics = L.LogicCases:new(newValue)
                 widget.showMinMax = defaultShowMinMax
+                widget.updateNextWakeup = true
                 form.clear()
                 configure(widget) --tail call
             end
@@ -131,12 +132,16 @@ local function configure(widget)
     if L.isSensor(widget.source) then
         line = form.addLine(__("showMinMax"))
         form.addBooleanField(line, nil, function() return widget.showMinMax end,
-            function(newValue) widget.showMinMax = newValue end)
+            function(newValue)
+                widget.showMinMax = newValue
+                widget.updateNextWakeup = true
+            end)
     end
     line = form.addLine(__("showBackgroundColor"))
     form.addBooleanField(line, nil, function() return widget.useBackgroung end,
         function(newValue)
             widget.useBackgroung = newValue
+            widget.updateNextWakeup = true
             L.fillLogicPanel(panel, widget, false)
         end)
 
@@ -144,6 +149,7 @@ local function configure(widget)
     form.addBooleanField(line, nil, function() return widget.useState end,
         function(newValue)
             widget.useState = newValue
+            widget.updateNextWakeup = true
             L.fillLogicPanel(panel, widget, false)
         end)
 
@@ -151,6 +157,7 @@ local function configure(widget)
     form.addBooleanField(line, nil, function() return widget.showTitle end,
         function(newValue)
             widget.showTitle = newValue
+            widget.updateNextWakeup = true
             L.fillLogicPanel(panel, widget, false)
         end)
     local panel = form.addExpansionPanel(__("infoPanelTitle"))
@@ -399,7 +406,6 @@ local function read(widget)
 end
 
 local function write(widget)
-    widget.updateNextWakeup = true
     storage.write("source", widget.source)
     storage.write("showTitle", widget.showTitle)
     storage.write("logics", "") -- erase v1 storage as of 1.1.0-rc3

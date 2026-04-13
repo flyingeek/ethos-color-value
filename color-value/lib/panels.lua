@@ -22,6 +22,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
         if logic then
             L.LogicCase[method](logic, " " .. tag)
             model.dirty()
+            widget.updateNextWakeup = true
             fillLogicPanel(panel, widget)
         end
     end
@@ -168,6 +169,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
                     function()
                         widget.logics:remove(i)
                         model.dirty()
+                        widget.updateNextWakeup = true
                         fillLogicPanel(panel, widget)
                     end,
                     string.format(__("caseDeleteMessage"), i),
@@ -186,6 +188,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
             function() return widget.logics:get(i).ope end,
             function(newValue)
                 widget.logics:get(i).ope = newValue
+                widget.updateNextWakeup = true
                 return highlightValidCase()
             end
         )
@@ -194,6 +197,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
             function() return widget.logics:get(i).threshold end,
             function(newValue)
                 widget.logics:get(i).threshold = newValue
+                widget.updateNextWakeup = true
                 return highlightValidCase()
             end
         )
@@ -203,25 +207,40 @@ local function fillLogicPanel(panel, widget, grabFocus)
             -- large screen both colors on condiftion line
             form.addColorField(line, slots[3],
                 function() return widget.logics:get(i).color end,
-                function(newValue) widget.logics:get(i).color = newValue end)
+                function(newValue)
+                    widget.logics:get(i).color = newValue
+                    widget.updateNextWakeup = true
+                end)
             form.addColorField(line, slots[4],
                 function() return widget.logics:get(i).bgcolor or L.defaultWidgetBgColor end,
-                function(newValue) widget.logics:get(i).bgcolor = newValue end)
+                function(newValue)
+                    widget.logics:get(i).bgcolor = newValue
+                    widget.updateNextWakeup = true
+                end)
         elseif widget.useBackgroung then
             -- small screen both colors on new line
             line = panel:addLine("", i == count and count >= maxConditions and not widget.useState)
             slots = form.getFieldSlots(line, { 0, 0 })
             form.addColorField(line, slots[1],
                 function() return widget.logics:get(i).color end,
-                function(newValue) widget.logics:get(i).color = newValue end)
+                function(newValue)
+                    widget.logics:get(i).color = newValue
+                    widget.updateNextWakeup = true
+                end)
             form.addColorField(line, slots[2],
                 function() return widget.logics:get(i).bgcolor or L.defaultWidgetBgColor end,
-                function(newValue) widget.logics:get(i).bgcolor = newValue == L.defaultWidgetBgColor and nil or newValue end)
+                function(newValue)
+                    widget.logics:get(i).bgcolor = newValue == L.defaultWidgetBgColor and nil or newValue
+                    widget.updateNextWakeup = true
+                end)
         else
             -- single color (no background color)
             form.addColorField(line, slots[3],
                 function() return widget.logics:get(i).color end,
-                function(newValue) widget.logics:get(i).color = newValue end)
+                function(newValue)
+                    widget.logics:get(i).color = newValue
+                    widget.updateNextWakeup = true
+                end)
         end
         if widget.useState then
             if widget.showTitle then
@@ -230,7 +249,10 @@ local function fillLogicPanel(panel, widget, grabFocus)
                 slots = form.getFieldSlots(line, { 0, tagButtonText })
                 form.addTextField(line, slots[1],
                     function() return widget.logics:get(i).title end,
-                    function(newValue) widget.logics:get(i).title = newValue end)
+                    function(newValue)
+                        widget.logics:get(i).title = newValue
+                        widget.updateNextWakeup = true
+                    end)
                 addTagButton(line, slots[2], i, "appendTitle")
             end
             line = panel:addLine("", i == count and count >= maxConditions)
@@ -238,7 +260,10 @@ local function fillLogicPanel(panel, widget, grabFocus)
             slots = form.getFieldSlots(line, { 0, tagButtonText })
             textField = form.addTextField(line, slots[1],
                 function() return widget.logics:get(i).text end,
-                function(newValue) widget.logics:get(i).text = newValue end)
+                function(newValue)
+                    widget.logics:get(i).text = newValue
+                    widget.updateNextWakeup = true
+                end)
             addTagButton(line, slots[2], i, "appendText")
         end
     end
@@ -275,6 +300,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
             press = function()
                 widget.logics:add()
                 model.dirty()
+                widget.updateNextWakeup = true
                 fillLogicPanel(panel, widget)
             end
         })
