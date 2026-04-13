@@ -271,14 +271,15 @@ end
 
 local function wakeup(widget)
     local newTimestamp = os.clock()
-    if widget.source and (widget.updateNextWakeup or newTimestamp >= widget.timestamp + refreshRate) then
+    local enforceUpdate = widget.updateNextWakeup
+    if widget.source and (enforceUpdate or newTimestamp >= widget.timestamp + refreshRate) then
         widget.timestamp = newTimestamp
         local newValue = widget.source:value()
         local newMinimum = widget.source:value({ options = OPTION_SENSOR_MIN })
         local newMaximum = widget.source:value({ options = OPTION_SENSOR_MAX })
         local newTelemetryState = widget.source:state()
-        local telemetryChanged = L.isSensor(widget.source) and widget.telemetryState ~= newTelemetryState
-        if widget.updateNextWakeup
+        local telemetryChanged = widget.telemetryState ~= newTelemetryState and L.isSensor(widget.source)
+        if enforceUpdate
             or widget.value ~= newValue
             or widget.minimum ~= newMinimum
             or widget.maximum ~= newMaximum
@@ -290,11 +291,11 @@ local function wakeup(widget)
             updateParameters(widget)
             lcd.invalidate()
         end
-        if widget.updateNextWakeup or telemetryChanged then
+        if enforceUpdate or telemetryChanged then
             widget.telemetryState = newTelemetryState
             lcd.invalidate() -- update colors if telemetry state changed
         end
-        if widget.updateNextWakeup then widget.updateNextWakeup = false end
+        if enforceUpdate then widget.updateNextWakeup = false end
     end
 end
 
