@@ -1,10 +1,5 @@
 # Color Value : Lua Ethos Widget [[download]](https://github.com/flyingeek/ethos-color-value/releases/latest)
 
-## Changes
-
-This is a pre-release version, no feature added, this is just about optimizing memory usage even if this is
-not a high demanding widget. The hotpath (wakeup, paint) has been rewritten to reduce at minimum table allocations.
-
 ## Features
 
 - Mimics the Ethos's Value widget

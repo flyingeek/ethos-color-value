@@ -1,16 +1,7 @@
-# 1.1.1
+# 1.1.2-rc1
 
-**Version 1.1.1 fix a critical error in read from storage, all users should perform the update.**
-
-Although I added many features, the UI can stay very minimmalist, as before.
-
-New features:
-
-- min/max values are shown in the menu only when not displayed in the widget
-- possibility to set both text and background color
-- possibility to use custom states
-- custom states allow the use of special tags to insert source name or source value.
-- when using tags, it is possible to use multiple lines
+This is a pre-release version, no feature added, this is just about optimizing memory usage even if this is
+not a high demanding widget. The hotpath (wakeup, paint) has been rewritten to reduce at minimum table allocations.
 
 Example of widget outputs:
 ![go-crazy-demo](https://github.com/user-attachments/assets/0fb564c0-a947-496a-a3c1-8823d7405dc8)
