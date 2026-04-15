@@ -1,7 +1,11 @@
-# 1.1.2-rc2
+# 1.1.2-rc3
 
-This is a pre-release version, no feature added, this is just about optimizing memory usage even if this is
+This is a pre-release version, this is just about optimizing memory usage even if this is
 not a high demanding widget. The hotpath (wakeup, paint) has been rewritten to reduce at minimum table allocations.
+
+## Changes
+
+- _x tag now accepts negative values
 
 Example of widget outputs:
 ![go-crazy-demo](https://github.com/user-attachments/assets/0fb564c0-a947-496a-a3c1-8823d7405dc8)
