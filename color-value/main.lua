@@ -308,7 +308,7 @@ end
 
 local function paint(widget)
     if not L.sourceExists(widget.source) then return end
-    local focusBgColor = lcd.darkMode() and lcd.themeColor(THEME_FOCUS_BGCOLOR) or lcd.color(COLOR_WHITE)
+    local focusBgColor = lcd.darkMode() and lcd.themeColor(THEME_SECONDARY_BGCOLOR or THEME_FOCUS_BGCOLOR) or COLOR_WHITE
     local valueColor = widget.valueColor
     local titleColor = widget.titleColor
     local bgColor = widget.bgColor
