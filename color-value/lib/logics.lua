@@ -58,7 +58,7 @@ local function replaceTag(s, source)
                     return string.format(format, tonumber(source:value()) or 0)
                 end)
             :gsub("_v", tostring(formatWithDecimals(source:value(), source))) -- replace _v
-            :gsub("_t", escapePattern(source:stringValue()))                  -- replace _t
+            :gsub("_t", escapePattern(source:stringValue() or ""))            -- replace _t
             :gsub("_n", escapePattern(source:name()))                         -- replace _n
             :gsub("_u", escapePattern(source:stringUnit() or ""))             -- replace _u
             :gsub("_1(0+)v",                                                  -- replace _10v _100v ...

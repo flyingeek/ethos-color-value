@@ -71,7 +71,8 @@ local function fillLogicPanel(panel, widget, grabFocus)
             end
         end
         local stringValue = widget.source:stringValue() == "---" and
-            L.formatWithDecimals(0, widget.source) .. widget.source:stringUnit() or widget.source:stringValue()
+            L.formatWithDecimals(0, widget.source) .. (widget.source:stringUnit() or "") or
+            (widget.source:stringValue() or "---")
         table.insert(buttons,
             {
                 label = stringValue:sub(1, 10),
