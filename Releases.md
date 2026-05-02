@@ -1,4 +1,4 @@
-# 1.1.2-rc3
+# 1.1.2-rc4
 
 This is a pre-release version, this is just about optimizing memory usage even if this is
 not a high demanding widget. The hotpath (wakeup, paint) has been rewritten to reduce at minimum table allocations.
@@ -6,6 +6,8 @@ not a high demanding widget. The hotpath (wakeup, paint) has been rewritten to r
 ## Changes
 
 - _x tag now accepts negative values
+- fixed the Focus Color used when not in darkmode
+- removed 2 potential risks of nil value (one in logic tag parser, one in the configure panel)
 
 Example of widget outputs:
 ![go-crazy-demo](https://github.com/user-attachments/assets/0fb564c0-a947-496a-a3c1-8823d7405dc8)
