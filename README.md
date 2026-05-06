@@ -41,6 +41,6 @@ You can really try the widget in your browser with nice guided examples --> [Doc
 
 ## What's in the box ?
 
-After installation, two new widgets become available: **Color Value** and **Color Telemetry**. They use the same underlying code, but **Color Telemetry** limits the source to a telemetry sensor—so if you’re using telemetry, it’s faster to set up with Color Telemetry. However, note that complex telemetry values (those requiring the use of the hamburger in the source menu) are only available in **Color Value**.
+After installation, two new widgets become available: **Color Value** and **Color Telemetry**. They use the same underlying code, but **Color Telemetry** filters the source to a telemetry sensor—so if you’re using telemetry, it’s faster to set up with Color Telemetry.
 
 To install or download, go to the [latest release page](https://github.com/flyingeek/ethos-color-value/releases/latest) and follow the instructions.

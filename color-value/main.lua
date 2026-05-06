@@ -108,9 +108,14 @@ end
 
 local function configure(widget)
     local line = form.addLine(__("source"))
-    local method = widget.type == WIDGET_TYPE_SOURCE and "addSourceField" or "addSensorField"
-    local sourceField = form[method](line, nil,
-        function() return widget.source end,
+
+    local sourceField = form.addSourceField(line, nil,
+        function()
+            if widget.type == WIDGET_TYPE_SENSOR and widget.source == nil then
+                return system.getSource({ category = CATEGORY_TELEMETRY_SENSOR })
+            end
+            return widget.source
+        end,
         function(newValue)
             if newValue ~= widget.source then
                 widget.source = newValue
@@ -118,7 +123,7 @@ local function configure(widget)
                 widget.showMinMax = defaultShowMinMax
                 widget.updateNextWakeup = true
                 form.clear()
-                configure(widget) --tail call
+                configure(widget)
             end
         end
     )

@@ -5,6 +5,7 @@ not a high demanding widget. The hotpath (wakeup, paint) has been rewritten to r
 
 ## Changes
 
+- Color Telemetry now uses the same input type as Color Value, but it filters on the Telemetry Sensor Category. This solve the annoyance of not having the hamburger menu.
 - _x tag now accepts negative values
 - fixed the Focus Color used when not in darkmode
 - removed 2 potential risks of nil value (one in logic tag parser, one in the configure panel)
@@ -28,6 +29,6 @@ The recommended way to install is to use Ethos Studio. The Ethos version on the 
 
 If you prefer the manual method, unzip, open and drag the folder named exactly _color-value_ in your radio's script folder.
 
-After installation, two new widgets become available: **Color Value** and **Color Telemetry**. They use the same underlying code, but **Color Telemetry** limits the source to a telemetry sensor—so if you’re using telemetry, it’s faster to set up with Color Telemetry.  However, note that complex telemetry values (those requiring the use of the hamburger in the source menu) are only available in **Color Value**.
+After installation, two new widgets become available: **Color Value** and **Color Telemetry**. They use the same underlying code, but **Color Telemetry** filters the source to a telemetry sensor—so if you’re using telemetry, it’s faster to set up with Color Telemetry.
 
 ***
