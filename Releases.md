@@ -1,7 +1,6 @@
 # 1.1.2-rc4
 
-This is a pre-release version, this is just about optimizing memory usage even if this is
-not a high demanding widget. The hotpath (wakeup, paint) has been rewritten to reduce at minimum table allocations.
+This is a pre-release version, if you do not intend to help by reporting bugs, please use the released stable version instead.
 
 ## Changes
 
@@ -9,6 +8,10 @@ not a high demanding widget. The hotpath (wakeup, paint) has been rewritten to r
 - _x tag now accepts negative values
 - fixed the Focus Color used when not in darkmode
 - removed 2 potential risks of nil value (one in logic tag parser, one in the configure panel)
+- optimized the hotpath (wakeup, paint) to reduce at minimum table/string allocations
+- compatible with the new installation manifest of Ethos Suite 1.7.2
+
+---
 
 Example of widget outputs:
 ![go-crazy-demo](https://github.com/user-attachments/assets/0fb564c0-a947-496a-a3c1-8823d7405dc8)
@@ -29,6 +32,6 @@ The recommended way to install is to use Ethos Studio. The Ethos version on the 
 
 If you prefer the manual method, unzip, open and drag the folder named exactly _color-value_ in your radio's script folder.
 
-After installation, two new widgets become available: **Color Value** and **Color Telemetry**. They use the same underlying code, but **Color Telemetry** filters the source to a telemetry sensor—so if you’re using telemetry, it’s faster to set up with Color Telemetry.
+After installation, two new widgets become available: **Color Value** and **Color Telemetry**. They use the same underlying code, but **Color Telemetry** filters the source to a telemetry sensor —so if you’re using telemetry, it’s faster to set up with Color Telemetry.
 
 ***

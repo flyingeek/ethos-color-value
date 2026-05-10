@@ -10,6 +10,10 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      GIT_VER: ''
+      GIT_TAG: ''
+      GH_TYPE: ''
 
     steps:
     - name: Check out repository
@@ -30,9 +34,33 @@ jobs:
         echo "GH_TYPE=${GH_TYPE}" >> ${GITHUB_ENV}
         cat ${GITHUB_ENV}
 
+    - name: Verify version consistency
+      run: |
+        MD_VER=$(grep -m 1 "^# " Releases.md | sed 's/^# //')
+        MANIFEST_VER=$(python3 -c "import json; print(json.load(open('ethos_lua_manifest.json'))['version'])")
+        SCRIPT_VER=$(grep -m 1 'local scriptVersion' color-value/main.lua | sed 's/.*"\(.*\)".*/\1/')
+        echo "Tag version      : ${{ env.GIT_VER }}"
+        echo "Releases.md      : ${MD_VER}"
+        echo "Manifest version : ${MANIFEST_VER}"
+        echo "scriptVersion    : ${SCRIPT_VER}"
+        FAIL=0
+        if [[ "${MD_VER}" != "${{ env.GIT_VER }}" ]]; then
+          echo "::error::Releases.md version (${MD_VER}) does not match tag (${{ env.GIT_VER }})"
+          FAIL=1
+        fi
+        if [[ "${MANIFEST_VER}" != "${{ env.GIT_VER }}" ]]; then
+          echo "::error::ethos_lua_manifest.json version (${MANIFEST_VER}) does not match tag (${{ env.GIT_VER }})"
+          FAIL=1
+        fi
+        if [[ "${SCRIPT_VER}" != "${{ env.GIT_VER }}" ]]; then
+          echo "::error::scriptVersion in main.lua (${SCRIPT_VER}) does not match tag (${{ env.GIT_VER }})"
+          FAIL=1
+        fi
+        exit ${FAIL}
+
     - name: Make release package
       run: |
-          zip -q -r "ethos-color-value-${{ env.GIT_VER }}.zip" color-value*
+          zip -q -r "ethos-color-value-${{ env.GIT_VER }}.zip" color-value* ethos_lua_manifest.json
 
     - name: Create Release
       run: |

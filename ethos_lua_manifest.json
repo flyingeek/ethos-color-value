@@ -1,0 +1,17 @@
+{
+    "manifestVersion": 1,
+    "name": "Color Value",
+    "key": "flyingeek.ethos-color-value",
+    "version": "1.1.2-rc4",
+    "releaseNotes": {
+        "format": "markdown",
+        "content": "# 1.1.2-rc4\n\nThis is a pre-release version, if you do not intend to help by reporting bugs, please use the released stable version instead.\n\n## Changes\n\n- Color Telemetry now uses the same input type as Color Value, but it filters on the Telemetry Sensor Category. This solve the annoyance of not having the hamburger menu.\n- _x tag now accepts negative values\n- fixed the Focus Color used when not in darkmode\n- removed 2 potential risks of nil value (one in logic tag parser, one in the configure panel)\n- optimized the hotpath (wakeup, paint) to reduce at minimum table/string allocations\n- compatible with the new installation manifest of Ethos Suite 1.7.2"
+    },
+    "folder": "color-value",
+    "files": [
+        "color-value/main.lua",
+        "color-value/bitmaps/*",
+        "color-value/i18n/*",
+        "color-value/lib/*"
+    ]
+}
