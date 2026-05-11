@@ -112,7 +112,7 @@ local function configure(widget)
     local sourceField = form.addSourceField(line, nil,
         function()
             if widget.type == WIDGET_TYPE_SENSOR and widget.source == nil then
-                return system.getSource({ category = CATEGORY_TELEMETRY_SENSOR })
+                widget.source = system.getSource({ category = CATEGORY_TELEMETRY_SENSOR })
             end
             return widget.source
         end,

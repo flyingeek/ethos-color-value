@@ -2,7 +2,9 @@
 .DS_Store
 .vscode/*
 !.vscode/scripts/
+.vscode/scripts/*
 !.vscode/scripts/update-manifest.py
 .markdownlint.json
 simulator
+library
 .luarc.json
