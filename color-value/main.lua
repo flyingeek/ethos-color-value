@@ -260,12 +260,12 @@ local function updateParameters(widget)
             searchIndex = searchIndex - 1
         end
         local endSearchIndex = #minmaxFonts
-        if widget.width >= 256 then
+        if w >= 256 then
             endSearchIndex = endSearchIndex -
                 1 -- restrict allowed fonts (no FONT_XS) for wide widgets for readability reasons
         end
         local minValueWidth, minValueHeight, bestFontIndex = L.bestOverlap(widget.formattedMinValue, minmaxFonts,
-            (widget.width - widget.valueWidth) / 2, maxHeight, "0", searchIndex, endSearchIndex)
+            (w - widget.valueWidth) / 2, maxHeight, "0", searchIndex, endSearchIndex)
         local maxValueWidth, maxValueHeight = lcd.getTextSize(L.isUTF8Compatible and widget.formattedMaxValue or
             L.replaceUTF8(widget.formattedMaxValue, "0"))
         widget.minValueY = maxValueY + maxValueHeight + (widgetMargin / 2)
