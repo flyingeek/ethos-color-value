@@ -7,9 +7,6 @@ local WIDGET_TYPE_SOURCE = 1
 local WIDGET_TYPE_SENSOR = 2
 local ethosVersion = system.getVersion()
 local runningInSimulator = ethosVersion.simulation
--- widget backgrounds THEME_SECONDARY_BGCOLOR is inconsistent (light vs darkMode) and for Ethos 1.6 ETHOS constants are not exported
-local widgetBgColorDark = ethosVersion.major >= 26 and lcd.RGB(0x28, 0x30, 0x38) or lcd.RGB(0x29, 0x29, 0x29)
-local widgetBgColorLight = ethosVersion.major >= 26 and lcd.RGB(0xD6, 0xD6, 0xD6) or lcd.RGB(0xF6, 0xF3, 0xF7)
 local widgetMargin = 4
 local widgetTitleFont = FONT_S
 local valueFonts = { FONT_XXL, FONT_XL, FONT_L, FONT_M or FONT_STD, FONT_S }
@@ -328,7 +325,7 @@ local function paint(widget)
     local w, h = widget.width or 0, widget.height or 0
     local i, line
     if bgColor then
-        if not lcd.hasFocus() and ((lcd.darkMode() and bgColor ~= widgetBgColorDark) or (not lcd.darkMode() and bgColor ~= widgetBgColorLight)) then
+        if not lcd.hasFocus() and (bgColor ~= L.defaultWidgetBgColor) then
             lcd.color(bgColor)
             lcd.drawFilledRectangle(0, 0, w, h)
         end
@@ -484,7 +481,11 @@ local function build(widget)
     local isDarkMode = lcd.darkMode()
     L.secondaryColor = lcd.themeColor(THEME_SECONDARY_COLOR or 14)
     L.defaultColor = lcd.themeColor(THEME_PRIMARY_COLOR or THEME_DEFAULT_COLOR)
-    L.defaultWidgetBgColor = isDarkMode and widgetBgColorDark or widgetBgColorLight
+    if (ethosVersion.major or 0) >= 26 then
+        L.defaultWidgetBgColor = lcd.themeColor(THEME_PRIMARY_BGCOLOR)
+    else
+        L.defaultWidgetBgColor = isDarkMode and lcd.RGB(0x29, 0x29, 0x29) or lcd.RGB(0xF6, 0xF3, 0xF7)
+    end
     widget.width, widget.height = lcd.getWindowSize()
     local locale = system.getLocale()
     if system.getLocale() ~= L.getLocale() then
