@@ -61,6 +61,7 @@ jobs:
     - name: Make release package
       run: |
           zip -q -r "ethos-color-value-${{ env.GIT_VER }}.zip" color-value* ethos_lua_manifest.json
+          echo '{"version":"${{ env.GIT_VER }}"}' > version.json
 
     - name: Create Release
       run: |
@@ -69,6 +70,6 @@ jobs:
           --notes-file Notes.md \
           --title "Color Value Lua Widget for Ethos - ${{ env.GH_TYPE }} ${{ env.GIT_VER }}" \
           $( [[ "${{ env.GH_TYPE }}" == "Release Candidate" ]] && echo "--prerelease" ) \
-          *.zip
+          *.zip version.json
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
