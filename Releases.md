@@ -1,4 +1,4 @@
-# 1.1.2-rc5
+# 1.1.2-rc6
 
 This is a pre-release version, if you do not intend to help by reporting bugs, please use the released stable version instead.
 
@@ -6,10 +6,10 @@ This is a pre-release version, if you do not intend to help by reporting bugs, p
 
 - Color Telemetry now uses the same input type as Color Value, but it filters on the Telemetry Sensor Category. This solve the annoyance of not having the hamburger menu.
 - _x tag now accepts negative values
-- fixed the Focus Color used when not in darkmode
 - removed 2 potential risks of nil value (one in logic tag parser, one in the configure panel)
 - optimized the hotpath (wakeup, paint) to reduce at minimum table/string allocations
 - compatible with the new installation manifest of Ethos Suite 1.7.2
+- compatible with new themes of Ethos 26.1.0 RC2
 
 ---
 

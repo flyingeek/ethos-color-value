@@ -4,7 +4,7 @@ import json
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).parent.parent.parent
+REPO_ROOT = Path(__file__).parent.parent
 RELEASES_MD = REPO_ROOT / "Releases.md"
 MANIFEST_JSON = REPO_ROOT / "ethos_lua_manifest.json"
 

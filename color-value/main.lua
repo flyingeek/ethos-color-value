@@ -1,4 +1,4 @@
-local scriptVersion = "1.1.2-rc5"
+local scriptVersion = "1.1.2-rc6"
 local scriptAuthor = "github.com/flyingeek"
 local githubRepo = "ethos-color-value"
 local refreshRate = 1 / 10 -- 10Hz
@@ -21,11 +21,12 @@ local L = assert(loadfile("lib/init.luac", "b")({
     deleteIcon = lcd.loadMask("bitmaps/mask_delete_icon.png"),
     isUTF8Compatible = ethosVersion.major >= 26,
     needsDialogReflow = not (ethosVersion.major >= 26 or (ethosVersion.major == 1 and ethosVersion.minor == 6 and ethosVersion.revision >= 6)),
-    MAX_CONDITIONS = 5,       -- be careful for storage(read/write) if you change this
-    secondaryColor = 0,       -- set in build
-    defaultColor = 0,         -- set in build
-    defaultWidgetBgColor = 0, -- set in build
-}, "L"))                      -- here "L" is the namespace used in the lib files
+    MAX_CONDITIONS = 5,                               -- be careful for storage(read/write) if you change this
+    secondaryColor = 0,                               -- set in build
+    defaultColor = 0,                                 -- set in build
+    defaultWidgetBgColor = lcd.RGB(0x29, 0x29, 0x29), -- set in build if lcd.darkMode is available or v>=26
+    focusBgColor = COLOR_BLACK,                       -- set in build if lcd.darkMode is available or v>=26
+}, "L"))                                              -- here "L" is the namespace used in the lib files
 
 local __ = L.translate
 local log = L.log
@@ -310,7 +311,7 @@ end
 
 local function paint(widget)
     if not L.sourceExists(widget.source) then return end
-    local focusBgColor = lcd.darkMode() and lcd.themeColor(THEME_SECONDARY_BGCOLOR or THEME_FOCUS_BGCOLOR) or COLOR_WHITE
+    local focusBgColor = L.focusBgColor
     local valueColor = widget.valueColor
     local titleColor = widget.titleColor
     local bgColor = widget.bgColor
@@ -478,13 +479,19 @@ local function menu(widget)
 end
 
 local function build(widget)
-    local isDarkMode = lcd.darkMode()
     L.secondaryColor = lcd.themeColor(THEME_SECONDARY_COLOR or 14)
     L.defaultColor = lcd.themeColor(THEME_PRIMARY_COLOR or THEME_DEFAULT_COLOR)
     if (ethosVersion.major or 0) >= 26 then
         L.defaultWidgetBgColor = lcd.themeColor(THEME_PRIMARY_BGCOLOR)
-    else
+        if THEME_HIGHLIGHT_INVERT_COLOR then
+            L.focusBgColor = lcd.themeColor(THEME_HIGHLIGHT_INVERT_COLOR)
+        elseif lcd.darkMode then
+            L.focusBgColor = lcd.darkMode() and COLOR_BLACK or COLOR_WHITE
+        end
+    elseif lcd.darkMode then -- backward compatibility 1.6
+        local isDarkMode = lcd.darkMode()
         L.defaultWidgetBgColor = isDarkMode and lcd.RGB(0x29, 0x29, 0x29) or lcd.RGB(0xF6, 0xF3, 0xF7)
+        L.focusBgColor = isDarkMode and COLOR_BLACK or COLOR_WHITE
     end
     widget.width, widget.height = lcd.getWindowSize()
     local locale = system.getLocale()
