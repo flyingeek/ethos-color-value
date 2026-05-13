@@ -10,7 +10,7 @@ MANIFEST_JSON = REPO_ROOT / "ethos_lua_manifest.json"
 
 CUSTOM_MARKDOWN = """
 
-## Download ![Dynamic JSON Badge]## Download ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fflyingeek%2Fethos-color-value%2Freleases%2Flatest%2Fdownload%2Fversion.json&query=%24.version&prefix=v&label=stable&color=darkgreen) ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fflyingeek%2Fethos-color-value%2Frefs%2Fheads%2Fdev%2Fethos_lua_manifest.json&query=%24.version&label=latest)
+## Download ![Dynamic JSON Badge]## Download ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2Fflyingeek%2Fethos-color-value%2Freleases%2Flatest%2Fdownload%2Fversion.json&query=%24.version&prefix=v&label=stable&color=darkgreen) ![Dynamic JSON Badge](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Fflyingeek%2Fethos-color-value%2Frefs%2Fheads%2Fdev%2Fethos_lua_manifest.json&query=%24.version&prefix=v&label=latest)
 
 You can download the latest version on the [latest stable release page](https://github.com/flyingeek/ethos-color-value/releases/latest), or browse all available [releases](https://github.com/flyingeek/ethos-color-value/releases).
 """
