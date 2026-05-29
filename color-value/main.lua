@@ -1,4 +1,4 @@
-local scriptVersion = "1.1.2-rc6"
+local scriptVersion = "1.1.2-rc7"
 local scriptAuthor = "github.com/flyingeek"
 local githubRepo = "ethos-color-value"
 local refreshRate = 1 / 10 -- 10Hz
@@ -317,7 +317,7 @@ local function paint(widget)
     local bgColor = widget.bgColor
     local minmaxColor = widget.minmaxColor
     if widget.telemetryState == false and widget.value ~= nil and L.isSensor(widget.source) then
-        valueColor = lcd.themeColor(THEME_WARNING_COLOR)
+        valueColor = lcd.themeColor(THEME_ERROR_COLOR or THEME_WARNING_COLOR)
         titleColor = L.secondaryColor
         bgColor = nil
         minmaxColor = L.defaultColor
@@ -483,8 +483,8 @@ local function build(widget)
     L.defaultColor = lcd.themeColor(THEME_PRIMARY_COLOR or THEME_DEFAULT_COLOR)
     if (ethosVersion.major or 0) >= 26 then
         L.defaultWidgetBgColor = lcd.themeColor(THEME_PRIMARY_BGCOLOR)
-        if THEME_HIGHLIGHT_INVERT_COLOR then
-            L.focusBgColor = lcd.themeColor(THEME_HIGHLIGHT_INVERT_COLOR)
+        if THEME_HIGHLIGHT_CONTRASTING_COLOR then
+            L.focusBgColor = lcd.themeColor(THEME_HIGHLIGHT_CONTRASTING_COLOR)
         elseif lcd.darkMode then
             L.focusBgColor = lcd.darkMode() and COLOR_BLACK or COLOR_WHITE
         end

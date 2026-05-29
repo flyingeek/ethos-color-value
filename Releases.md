@@ -1,4 +1,4 @@
-# 1.1.2-rc6
+# 1.1.2-rc7
 
 This is a pre-release version, if you do not intend to help by reporting bugs, please use the released stable version instead.
 
@@ -9,7 +9,7 @@ This is a pre-release version, if you do not intend to help by reporting bugs, p
 - removed 2 potential risks of nil value (one in logic tag parser, one in the configure panel)
 - optimized the hotpath (wakeup, paint) to reduce at minimum table/string allocations
 - compatible with the new installation manifest of Ethos Suite 1.7.2
-- compatible with new themes of Ethos 26.1.0 RC2
+- compatible with new themes of Ethos 26.1.0 RC2/RC3
 
 ---
 

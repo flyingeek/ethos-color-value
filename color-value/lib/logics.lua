@@ -109,7 +109,7 @@ function LogicCase:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
-    o.color = o.color or lcd.themeColor(THEME_WARNING_COLOR)
+    o.color = o.color or lcd.themeColor(THEME_ERROR_COLOR or THEME_WARNING_COLOR)
     return o
 end
 
