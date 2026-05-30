@@ -31,6 +31,11 @@ local L = assert(loadfile("lib/init.luac", "b")({
 local __ = L.translate
 local log = L.log
 
+-- lcd.darkMode is deprecated in v26
+local function legacyDarkMode()
+    ---@diagnostic disable-next-line: deprecated
+    return lcd.darkMode and lcd.darkMode() or false
+end
 
 ---this is the create method for the Color Value Widget
 ---@return table
@@ -485,11 +490,11 @@ local function build(widget)
         L.defaultWidgetBgColor = lcd.themeColor(THEME_PRIMARY_BGCOLOR)
         if THEME_HIGHLIGHT_CONTRASTING_COLOR then
             L.focusBgColor = lcd.themeColor(THEME_HIGHLIGHT_CONTRASTING_COLOR)
-        elseif lcd.darkMode then
-            L.focusBgColor = lcd.darkMode() and COLOR_BLACK or COLOR_WHITE
+        else
+            L.focusBgColor = legacyDarkMode() and COLOR_BLACK or COLOR_WHITE
         end
-    elseif lcd.darkMode then -- backward compatibility 1.6
-        local isDarkMode = lcd.darkMode()
+    else
+        local isDarkMode = legacyDarkMode()
         L.defaultWidgetBgColor = isDarkMode and lcd.RGB(0x29, 0x29, 0x29) or lcd.RGB(0xF6, 0xF3, 0xF7)
         L.focusBgColor = isDarkMode and COLOR_BLACK or COLOR_WHITE
     end
