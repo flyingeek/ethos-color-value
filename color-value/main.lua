@@ -126,7 +126,7 @@ local function configure(widget)
                 widget.showMinMax = defaultShowMinMax
                 widget.updateNextWakeup = true
                 form.clear()
-                configure(widget)
+                return configure(widget) -- proper tail call
             end
         end
     )
