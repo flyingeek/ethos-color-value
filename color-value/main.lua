@@ -55,6 +55,7 @@ local function createTypeSource()
         maximum = nil,
         telemetryState = nil,
         -- others
+        logicPanel = nil,
         timestamp = 0,           -- timestamp of last update per widget instance
         updateNextWakeup = true, -- when true, forces update of the widget in the next wakeup (used after configuration changes in write function or on init)
         -- computed parameters for paint (not saved in storage)
@@ -130,12 +131,12 @@ local function configure(widget)
             end
         end
     )
-    local panel
+
     if not L.sourceExists(widget.source) then
         sourceField:focus()
     else
-        panel = form.addExpansionPanel(__("logicPanel"))
-        L.fillLogicPanel(panel, widget)
+        widget.logicPanel = form.addExpansionPanel(__("logicPanel"))
+        L.fillLogicPanel(widget.logicPanel, widget)
     end
     if L.isSensor(widget.source) then
         line = form.addLine(__("showMinMax"))
@@ -150,7 +151,7 @@ local function configure(widget)
         function(newValue)
             widget.useBackgroung = newValue
             widget.updateNextWakeup = true
-            L.fillLogicPanel(panel, widget, false)
+            L.fillLogicPanel(widget.logicPanel, widget, false)
         end)
 
     line = form.addLine(__("showCustomStates"))
@@ -158,7 +159,7 @@ local function configure(widget)
         function(newValue)
             widget.useState = newValue
             widget.updateNextWakeup = true
-            L.fillLogicPanel(panel, widget, false)
+            L.fillLogicPanel(widget.logicPanel, widget, false)
         end)
 
     line = form.addLine(__("showTitle"))
@@ -166,16 +167,18 @@ local function configure(widget)
         function(newValue)
             widget.showTitle = newValue
             widget.updateNextWakeup = true
-            L.fillLogicPanel(panel, widget, false)
+            L.fillLogicPanel(widget.logicPanel, widget, false)
         end)
     local panel = form.addExpansionPanel(__("infoPanelTitle"))
-    panel:open(false)
-    line = panel:addLine(__("infoPanelGitHubRepo"))
-    form.addStaticText(line, nil, githubRepo)
-    line = panel:addLine(__("infoPanelVersion"))
-    form.addStaticText(line, nil, scriptVersion)
-    line = panel:addLine(__("infoPanelAuthor"))
-    form.addStaticText(line, nil, scriptAuthor)
+    if panel then
+        panel:open(false)
+        line = panel:addLine(__("infoPanelGitHubRepo"))
+        form.addStaticText(line, nil, githubRepo)
+        line = panel:addLine(__("infoPanelVersion"))
+        form.addStaticText(line, nil, scriptVersion)
+        line = panel:addLine(__("infoPanelAuthor"))
+        form.addStaticText(line, nil, scriptAuthor)
+    end
     widget.focus = nil
 end
 
@@ -302,7 +305,24 @@ local function wakeup(widget)
             widget.value = newValue
             widget.minimum = newMinimum
             widget.maximum = newMaximum
-            widget.matchingCaseIndex = widget.logics:matchIndex(newValue)
+            local newMatchingCaseIndex = widget.logics:matchIndex(newValue)
+            if widget.matchingCaseIndex ~= newMatchingCaseIndex then
+                widget.matchingCaseIndex = newMatchingCaseIndex
+                if lcd.isVisible() then
+                    -- when in configure lcd.isVisible() is false, so the configure page is not shown anymore
+                    widget.logicPanel = nil
+                elseif widget.logicPanel then
+                    -- we are not certain the configure page is still open, attempt once
+                    local ok = pcall(
+                        function()
+                            L.fillLogicPanel(widget.logicPanel, widget) -- try to refill logic cases
+                        end
+                    )
+                    if not ok then
+                        widget.logicPanel = nil -- if it fails, we consider the configure page is closed
+                    end
+                end
+            end
             updateParameters(widget)
             lcd.invalidate()
         end
