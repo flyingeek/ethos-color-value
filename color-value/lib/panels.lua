@@ -140,10 +140,11 @@ local function fillLogicPanel(panel, widget, grabFocus)
     local caseTexts = {} -- a list of all the "Case%d" staticTextField
     -- hightlight or normalizes all the case based on the logic conditions
     local function highlightValidCase()
-        local highlightColor = lcd.RGB(0x88, 0xC0, 0x18)
+        local activeColor = THEME_ACTIVE_COLOR and lcd.themeColor(THEME_ACTIVE_COLOR) or COLOR_GREEN
+        local inactiveColor = THEME_INACTIVE_COLOR and lcd.themeColor(THEME_INACTIVE_COLOR) or COLOR_RED
         local match = widget.logics:matchIndex(widget.value)
         for j, staticText in pairs(caseTexts) do
-            staticText:color(j == match and highlightColor or secondaryColor)
+            staticText:color(j == match and activeColor or inactiveColor)
         end
     end
     if widget.useBackgroung and count > 0 then
