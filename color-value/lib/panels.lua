@@ -11,6 +11,9 @@ local function positionLabel(line, x, label, color)
     if color then field:color(color) end
     return field, rect
 end
+
+local logicPanelHighlighter = function(widget) end -- to be set by fillLogicPanel, used to higlight the matching case when the source value change
+
 local function fillLogicPanel(panel, widget, grabFocus)
     local secondaryColor = L.secondaryColor
     local lcdWidth = system.getVersion().lcdWidth
@@ -141,13 +144,22 @@ local function fillLogicPanel(panel, widget, grabFocus)
     local inactiveColor = THEME_INACTIVE_COLOR and lcd.themeColor(THEME_INACTIVE_COLOR) or COLOR_RED
     local caseTexts = {} -- a list of all the "Case%d" staticTextField
     -- hightlight or normalizes all the case based on the logic conditions
-    local function highlightValidCase()
-        local match = widget.matchingCaseIndex
-        for j, staticText in pairs(caseTexts) do
-            staticText:color(j == match and activeColor or inactiveColor)
+    -- might be called outside fillLogicPanel (wakeup)
+    -- must be set in the L namespace
+    L.logicPanelHighlighter = function(widgetInstance)
+        if widgetInstance.id ~= widget.id then return end -- wakeup call guard
+        if widgetInstance and caseTexts then -- guards
+            -- must read the color within this function because the theme color can change at any time
+            local activeColor = THEME_ACTIVE_COLOR and lcd.themeColor(THEME_ACTIVE_COLOR) or COLOR_GREEN
+            local inactiveColor = THEME_INACTIVE_COLOR and lcd.themeColor(THEME_INACTIVE_COLOR) or COLOR_RED
+            local match = widgetInstance.matchingCaseIndex
+            for j, staticText in pairs(caseTexts) do
+                if staticText then
+                    staticText:color(j == match and activeColor or inactiveColor)
+                end
+            end
         end
     end
-    widget.logicCaseHighlighter = highlightValidCase
     if widget.useBackgroung and count > 0 then
         -- adds a line to indicate which color is which
         local explanation = __("colorHint")
@@ -192,7 +204,6 @@ local function fillLogicPanel(panel, widget, grabFocus)
             function(newValue)
                 widget.logics:get(i).ope = newValue
                 widget.updateNextWakeup = true
-                --return highlightValidCase()
             end
         )
 
@@ -201,7 +212,6 @@ local function fillLogicPanel(panel, widget, grabFocus)
             function(newValue)
                 widget.logics:get(i).threshold = newValue
                 widget.updateNextWakeup = true
-                --return highlightValidCase()
             end
         )
         factoredField.updateFromSource(widget.source)
@@ -275,7 +285,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
     elseif grabFocus and choiceField then
         choiceField:focus()
     end
-    highlightValidCase()
+    L.logicPanelHighlighter(widget)
     if count < maxConditions and widget.source ~= nil and widget.source:name() ~= "---" then
         line = panel:addLine("")
         -- info position is non standard, left of the fieldSlots
@@ -314,5 +324,6 @@ local function fillLogicPanel(panel, widget, grabFocus)
 end
 
 return {
-    fillLogicPanel = fillLogicPanel
+    fillLogicPanel = fillLogicPanel,
+    logicPanelHighlighter = logicPanelHighlighter
 }

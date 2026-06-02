@@ -9,6 +9,7 @@ local ethosVersion = system.getVersion()
 local runningInSimulator = ethosVersion.simulation
 local widgetMargin = 4
 local widgetTitleFont = FONT_S
+local widgetInstanceId = 0
 local valueFonts = { FONT_XXL, FONT_XL, FONT_L, FONT_M or FONT_STD, FONT_S }
 local minmaxFonts = { FONT_M or FONT_STD, FONT_S, FONT_XS }
 
@@ -40,6 +41,7 @@ end
 ---this is the create method for the Color Value Widget
 ---@return table
 local function createTypeSource()
+    widgetInstanceId = widgetInstanceId + 1
     local data = {
         -- configure parameters (saved in storage)
         source = nil,
@@ -55,8 +57,7 @@ local function createTypeSource()
         maximum = nil,
         telemetryState = nil,
         -- others
-        logicPanel = nil,
-        logicCaseHighlighter = nil,
+        id = widgetInstanceId, -- unique id for each widget instance, required by the logicCaseHighlighter
         timestamp = 0,           -- timestamp of last update per widget instance
         updateNextWakeup = true, -- when true, forces update of the widget in the next wakeup (used after configuration changes in write function or on init)
         -- computed parameters for paint (not saved in storage)
@@ -309,20 +310,18 @@ local function wakeup(widget)
             local newMatchingCaseIndex = widget.logics:matchIndex(newValue)
             if widget.matchingCaseIndex ~= newMatchingCaseIndex then
                 widget.matchingCaseIndex = newMatchingCaseIndex
-                if lcd.isVisible() then
-                    -- when in configure lcd.isVisible() is false, so the configure page is not shown anymore
-                    widget.logicCaseHighlighter = nil
-                elseif widget.logicCaseHighlighter then
-                    -- we are not certain the configure page is still open, guarded attempt
+                if not lcd.isVisible() then
+                    -- lcd.isVisible() is false in widget's configure panel
+                    -- we need to call the highlighter only in configure panel
+                    -- as all this is a bit hacky, we use pcall
                     local ok, err = pcall(
                         function()
-                            if runningInSimulator then log(string.format("Highlighting logic cases %s from wakeup", widget.matchingCaseIndex)) end
-                            widget.logicCaseHighlighter()
+                            L.logicPanelHighlighter(widget)
                         end
                     )
-                    if not ok then
-                        widget.logicCaseHighlighter = nil -- if it fails, we consider the configure page is closed
-                        if runningInSimulator then log(err)end
+                    if not ok and runningInSimulator then
+                        log(string.format("Highlighting logic cases %s from wakeup", widget.matchingCaseIndex))
+                        log("Error: " .. tostring(err))
                     end
                 end
             end
