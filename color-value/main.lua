@@ -56,6 +56,7 @@ local function createTypeSource()
         telemetryState = nil,
         -- others
         logicPanel = nil,
+        logicCaseHighlighter = nil,
         timestamp = 0,           -- timestamp of last update per widget instance
         updateNextWakeup = true, -- when true, forces update of the widget in the next wakeup (used after configuration changes in write function or on init)
         -- computed parameters for paint (not saved in storage)
@@ -310,16 +311,18 @@ local function wakeup(widget)
                 widget.matchingCaseIndex = newMatchingCaseIndex
                 if lcd.isVisible() then
                     -- when in configure lcd.isVisible() is false, so the configure page is not shown anymore
-                    widget.logicPanel = nil
-                elseif widget.logicPanel then
-                    -- we are not certain the configure page is still open, attempt once
-                    local ok = pcall(
+                    widget.logicCaseHighlighter = nil
+                elseif widget.logicCaseHighlighter then
+                    -- we are not certain the configure page is still open, guarded attempt
+                    local ok, err = pcall(
                         function()
-                            L.fillLogicPanel(widget.logicPanel, widget) -- try to refill logic cases
+                            if runningInSimulator then log(string.format("Highlighting logic cases %s from wakeup", widget.matchingCaseIndex)) end
+                            widget.logicCaseHighlighter()
                         end
                     )
                     if not ok then
-                        widget.logicPanel = nil -- if it fails, we consider the configure page is closed
+                        widget.logicCaseHighlighter = nil -- if it fails, we consider the configure page is closed
+                        if runningInSimulator then log(err)end
                     end
                 end
             end

@@ -137,16 +137,17 @@ local function fillLogicPanel(panel, widget, grabFocus)
     -- the conditionLabel "If sourcename" is shared with all logic case
     local conditionLabel = L.sourceExists(widget.source) and widget.source:name() or ""
     if conditionLabel ~= "" then conditionLabel = string.format(__("conditionLabel"), conditionLabel) end
+    local activeColor = THEME_ACTIVE_COLOR and lcd.themeColor(THEME_ACTIVE_COLOR) or COLOR_GREEN
+    local inactiveColor = THEME_INACTIVE_COLOR and lcd.themeColor(THEME_INACTIVE_COLOR) or COLOR_RED
     local caseTexts = {} -- a list of all the "Case%d" staticTextField
     -- hightlight or normalizes all the case based on the logic conditions
     local function highlightValidCase()
-        local activeColor = THEME_ACTIVE_COLOR and lcd.themeColor(THEME_ACTIVE_COLOR) or COLOR_GREEN
-        local inactiveColor = THEME_INACTIVE_COLOR and lcd.themeColor(THEME_INACTIVE_COLOR) or COLOR_RED
-        local match = widget.logics:matchIndex(widget.value)
+        local match = widget.matchingCaseIndex
         for j, staticText in pairs(caseTexts) do
             staticText:color(j == match and activeColor or inactiveColor)
         end
     end
+    widget.logicCaseHighlighter = highlightValidCase
     if widget.useBackgroung and count > 0 then
         -- adds a line to indicate which color is which
         local explanation = __("colorHint")
@@ -191,7 +192,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
             function(newValue)
                 widget.logics:get(i).ope = newValue
                 widget.updateNextWakeup = true
-                return highlightValidCase()
+                --return highlightValidCase()
             end
         )
 
@@ -200,7 +201,7 @@ local function fillLogicPanel(panel, widget, grabFocus)
             function(newValue)
                 widget.logics:get(i).threshold = newValue
                 widget.updateNextWakeup = true
-                return highlightValidCase()
+                --return highlightValidCase()
             end
         )
         factoredField.updateFromSource(widget.source)
