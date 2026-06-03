@@ -58,5 +58,5 @@ return {
         estos valores se mostraran en el menu del widget.\n\n\z",
     helpTags="\z
         Puede usar etiquetas especiales para insertar el nombre de la fuente o el valor de la fuente con distintas precisiones. \z
-        Puede encontrar etiquetas adicionales en la documentacion. Haga clic en un boton para insertar la etiqueta."
+        Puede encontrar etiquetas adicionales en la documentacion. [_b] es un salto de linea. Haga clic en un boton para insertar la etiqueta."
 }

@@ -58,5 +58,5 @@ return {
         those values will be shown in the widget's menu.\n\n\z",
     helpTags="\z
         You may use special tags to insert the source name or the source value in different precisions. \z
-        Additional tags may be found in the documentation. Click a button to insert the tag."
+        Additional tags may be found in the documentation. [_b] is newline. Click a button to insert the tag."
 }

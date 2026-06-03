@@ -58,5 +58,5 @@ return {
         werden diese Werte im Menü des Widgets angezeigt.\n\n\z",
     helpTags="\z
         Sie können spezielle Tags verwenden, um den Quellnamen oder den Quellwert in unterschiedlichen Genauigkeiten einzufügen. \z
-        Weitere Tags können in der Dokumentation gefunden werden. Klicken Sie auf eine Schaltfläche, um den Tag einzufügen."
+        Weitere Tags können in der Dokumentation gefunden werden. [_b] ist ein Zeilenumbruch. Klicken Sie auf eine Schaltfläche, um den Tag einzufügen."
 }

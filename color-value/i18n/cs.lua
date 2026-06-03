@@ -58,5 +58,5 @@ return {
         se tyto hodnoty zobrazí v menu widgetu.\n\n\z",
     helpTags="\z
         Můžete použít speciální značky pro vložení názvu zdroje nebo hodnoty zdroje s různou přesností. \z
-        Další značky najdete v dokumentaci. Kliknutím na tlačítko značku vložíte."
+        Další značky najdete v dokumentaci. [_b] je nový řádek. Kliknutím na tlačítko značku vložíte."
 }

@@ -60,6 +60,6 @@ return {
         à défaut, vous retrouverez ces valeurs dans le menu du widget\n\n\z",
     helpTags="\z
         Vous pouvez utiliser des balises pour insérer le nom de la source, ou la valeur de la source avec \z
-        différentes précisions. D'autres balises peuvent être trouvées dans la documentation. \z
+        différentes précisions. D'autres balises peuvent être trouvées dans la documentation. [_b] insère un saut de ligne.\z
         Cliquer sur un bouton insère la balise correspondante."
 }
