@@ -1,4 +1,4 @@
-# 1.1.2-rc7
+# 1.1.2-rc8
 
 This is a pre-release version, if you do not intend to help by reporting bugs, please use the released stable version instead.
 
@@ -10,6 +10,8 @@ This is a pre-release version, if you do not intend to help by reporting bugs, p
 - optimized the hotpath (wakeup, paint) to reduce at minimum table/string allocations
 - compatible with the new installation manifest of Ethos Suite 1.7.2
 - compatible with new themes of Ethos 26.1.0 RC2/RC3
+- Logic Case highlighting is now also updated live when source changes. This will require Ethos >= 26.1.0 RC4 or Ethos >= 1.6.7.
+- Logic Case Higlighting uses ACTIVE_COLOR and INACTIVE_COLOR (same colors as Logic Switches)
 
 ---
 
