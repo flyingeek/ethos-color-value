@@ -4,14 +4,14 @@ This is a pre-release version, if you do not intend to help by reporting bugs, p
 
 ## Changes
 
-- Color Telemetry now uses the same input type as Color Value, but it filters on the Telemetry Sensor Category. This solve the annoyance of not having the hamburger menu.
-- _x tag now accepts negative values
-- removed 2 potential risks of nil value (one in logic tag parser, one in the configure panel)
-- optimized the hotpath (wakeup, paint) to reduce at minimum table/string allocations
+- Color Telemetry now uses the same input type as Color Value, but it preselects the Telemetry Category. This solve the annoyance of not having the hamburger menu to select an option.
+- Logic Case Highlighting is now updated live when source changes. This will require Ethos >= 26.1.0 RC4 or Ethos >= 1.6.7
 - compatible with the new installation manifest of Ethos Suite 1.7.2
 - compatible with new themes of Ethos 26.1.0 RC2/RC3
-- Logic Case highlighting is now also updated live when source changes. This will require Ethos >= 26.1.0 RC4 or Ethos >= 1.6.7.
-- Logic Case Higlighting uses ACTIVE_COLOR and INACTIVE_COLOR (same colors as Logic Switches)
+- _x tag now accepts negative values
+- Logic Case Highlighting uses ACTIVE_COLOR and INACTIVE_COLOR (same colors as Logic Switches)
+- removed 2 potential risks of nil value (one in logic tag parser, one in the configure panel)
+- optimized the hotpath (wakeup, paint) to reduce at minimum table/string allocations
 
 ---
 
