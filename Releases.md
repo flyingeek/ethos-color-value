@@ -34,6 +34,6 @@ The recommended way to install is to use Ethos Studio. The Ethos version on the 
 
 If you prefer the manual method, unzip, open and drag the folder named exactly _color-value_ in your radio's script folder.
 
-After installation, two new widgets become available: **Color Value** and **Color Telemetry**. They use the same underlying code, but **Color Telemetry** filters the source to a telemetry sensor —so if you’re using telemetry, it’s faster to set up with Color Telemetry.
+After installation, two new widgets become available: **Color Value** and **Color Telemetry**. They use the same underlying code, but **Color Telemetry** is like a shortcut, it preselects the Telemetry category — so if you’re using telemetry, it’s faster to set up with Color Telemetry.
 
 ***
