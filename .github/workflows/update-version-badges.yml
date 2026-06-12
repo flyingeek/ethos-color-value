@@ -1,0 +1,110 @@
+# This workflow updates the version badges for release and preview versions.
+# It runs on every push to a tag matching 'release/*' and can also be triggered manually.
+#
+# To set up GitHub Pages for this repository:
+# Settings → Pages
+# Set Source = GitHub Actions
+# Run the workflow once manually from Actions → Update Version Badges → Run workflow
+name: Update Version Badges
+
+on:
+  push:
+    tags:
+      - 'release/*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  badges:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fetch all tags
+        run: git fetch --tags --force
+
+      - name: Generate badge JSON
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p site
+
+          PREVIEW=$(
+            git tag --list 'release/*' --sort=-version:refname \
+            | head -n1
+          )
+
+          STABLE=$(
+            git tag --list 'release/*' --sort=-version:refname \
+            | grep -E '^release/[0-9]+\.[0-9]+\.[0-9]+$' \
+            | head -n1
+          )
+
+          PREVIEW=${PREVIEW#release/}
+          STABLE=${STABLE#release/}
+
+          # If PREVIEW is the same as STABLE, it's not a real pre-release
+          [[ "$PREVIEW" == "$STABLE" ]] && PREVIEW=""
+
+          echo "Release: ${STABLE:-none}"
+          echo "Preview: ${PREVIEW:-none}"
+
+          cat > site/release.json <<EOF
+          {
+            "schemaVersion": 1,
+            "label": "release",
+            "message": "${STABLE:-none}",
+            "color": "green"
+          }
+          EOF
+
+          cat > site/preview.json <<EOF
+          {
+            "schemaVersion": 1,
+            "label": "preview",
+            "message": "${PREVIEW:-none}",
+            "color": "orange"
+          }
+          EOF
+
+          cat > site/index.html <<EOF
+          <!doctype html>
+          <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Version Badges</title>
+            </head>
+            <body>
+              <h1>Version Badges</h1>
+              <ul>
+                <li><a href="release.json">release.json</a></li>
+                <li><a href="preview.json">preview.json</a></li>
+              </ul>
+            </body>
+          </html>
+          EOF
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
