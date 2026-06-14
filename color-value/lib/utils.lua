@@ -12,10 +12,106 @@ local ANSI_RED = "\27[1;31m"
 local ANSI_GREEN = "\27[1;32m"
 local ANSI_YELLOW = "\27[1;33m"
 local ANSI_CYAN = "\27[0;36m"
-local function log(text, ansiColor)
-    if not ansiColor then ansiColor = ANSI_CYAN end -- black is unreadable on ethos.studio1247.com
+
+local function logMessage(ansiColor, ...)
     local ANSI_RESET = "\27[0m"
-    print(ansiColor .. "[cv] " .. tostring(text) .. ANSI_RESET)
+    local args = {...}
+    local parts = {}
+    for i, v in ipairs(args) do
+        table.insert(parts, tostring(v))
+    end
+    local message = table.concat(parts, " ")
+    print(ansiColor .. "[cv] " .. message .. ANSI_RESET)
+end
+
+local log = {}
+setmetatable(log, { __call = function(_, ...) logMessage(ANSI_CYAN, ...) end })
+log.red = function(...) logMessage(ANSI_RED, ...) end
+log.error = log.red
+log.green = function(...) logMessage(ANSI_GREEN, ...) end
+log.yellow = function(...) logMessage(ANSI_YELLOW, ...) end
+log.warn = log.yellow
+log.cyan = function(...) logMessage(ANSI_CYAN, ...) end
+log.black = function(...) logMessage(ANSI_BLACK, ...) end
+
+local function formatValue(v)
+    local t = type(v)
+    if t == "string" then
+        return '"' .. v .. '"'
+    elseif t == "number" or t == "boolean" then
+        return tostring(v)
+    elseif t == "nil" then
+        return "nil"
+    elseif t == "function" then
+        return "<function>"
+    elseif t == "userdata" then
+        return "<userdata>"
+    else
+        return tostring(v)
+    end
+end
+
+local function prettyTableImpl(tbl, maxDepth, indent, visited)
+    if maxDepth == 0 then
+        return tostring(tbl)
+    end
+    if visited[tbl] then
+        return "{<circular>}"
+    end
+    visited[tbl] = true
+
+    local indent = indent or 0
+    local indentStr = string.rep("  ", indent)
+    local nextIndentStr = string.rep("  ", indent + 1)
+    local lines = {"{"}
+
+    for k, v in pairs(tbl) do
+        local key = formatValue(k)
+        local value
+        if type(v) == "table" then
+            value = prettyTableImpl(v, maxDepth - 1, indent + 1, visited)
+        else
+            value = formatValue(v)
+        end
+        table.insert(lines, nextIndentStr .. key .. " = " .. value .. ",")
+    end
+    table.insert(lines, indentStr .. "}")
+    return table.concat(lines, "\n")
+end
+
+local function prettyTableCompactImpl(tbl, maxDepth, visited)
+    if maxDepth == 0 then
+        return tostring(tbl)
+    end
+    if visited[tbl] then
+        return "{<circular>}"
+    end
+    visited[tbl] = true
+
+    local parts = {}
+    for k, v in pairs(tbl) do
+        local key = formatValue(k)
+        local value
+        if type(v) == "table" then
+            value = prettyTableCompactImpl(v, maxDepth - 1, visited)
+        else
+            value = formatValue(v)
+        end
+        table.insert(parts, key .. "=" .. value)
+    end
+    return "{" .. table.concat(parts, ", ") .. "}"
+end
+
+local prettyTable = {}
+setmetatable(prettyTable, {
+    __call = function(_, tbl, maxDepth)
+        maxDepth = maxDepth or 1
+        return prettyTableImpl(tbl, maxDepth, 0, {})
+    end
+})
+prettyTable.compact = function(tbl, maxDepth)
+    maxDepth = maxDepth or 1
+    return prettyTableCompactImpl(tbl, maxDepth, {})
 end
 
 local function isSensor(source)
@@ -173,6 +269,7 @@ return {
     confirm = confirm,
     trim = trim,
     log = log,
+    prettyTable = prettyTable,
     ANSI_RED = ANSI_RED,
     ANSI_GREEN = ANSI_GREEN,
     ANSI_YELLOW = ANSI_YELLOW,
