@@ -2,9 +2,12 @@
 # It runs on every push to a tag matching 'release/*' and can also be triggered manually.
 #
 # To set up GitHub Pages for this repository:
-# Settings → Pages
-# Set Source = GitHub Actions
+# Settings -> Pages -> Source -> GitHub Actions
+# Settings -> Environments -> github-pages -> main + dev
 # Run the workflow once manually from Actions → Update Version Badges → Run workflow
+#
+# Dependancies: git tag --list 'release/*' --sort=-version:refname order must be compatible with your versioning scheme
+#
 name: Update Version Badges
 
 on:

@@ -1,3 +1,17 @@
+# Publish a release on tag push. This workflow is triggered by a push to a tag matching 'release/*'.
+# - verify version consistency between tag, and main.lua.
+# - update ethos_lua_manifest.json with the new version and release notes (changes only).
+# - create a release package (zip) including the updated manifest and application files.
+# - create a version.json file for the release (this was used for badges, now deprecated).
+# - create a Release Note from Release.md, changes only for pre-releases, full for releases.
+#
+# Release candidates are tagged with a suffix, e.g. 'release/1.2.3-rc1', and are published as pre-releases.
+# Release e.g. 'release/1.2.3' are published as draft so that they can be reviewed before publishing. Draft releases can be published manually from the GitHub UI.
+#
+# Dependancies:
+# ethos_lua_manifest.json and Releases.md are hardcoded in jobs/build/env
+#
+
 name: Release
 
 on:
@@ -14,10 +28,15 @@ jobs:
       GIT_VER: ''
       GIT_TAG: ''
       GH_TYPE: ''
+      REPO_NAME: ${{ github.event.repository.name }}
+      REPO_OWNER: ${{ github.repository_owner }}
+      APP_NAME: ''
+      MANIFEST_FILE: ethos_lua_manifest.json
+      RELEASES_MD: Releases.md
 
     steps:
     - name: Check out repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v4
 
     - name: Set build variables
       run: |
@@ -29,47 +48,43 @@ jobs:
         else
           GH_TYPE='Release'
         fi
+        APP_NAME=$(jq -r .folder ${MANIFEST_FILE})
         echo "GIT_VER=${GIT_VER}" >> ${GITHUB_ENV}
         echo "GIT_TAG=${GIT_TAG}" >> ${GITHUB_ENV}
         echo "GH_TYPE=${GH_TYPE}" >> ${GITHUB_ENV}
+        echo "APP_NAME=${APP_NAME}" >> ${GITHUB_ENV}
         cat ${GITHUB_ENV}
 
     - name: Verify version consistency
       run: |
-        MD_VER=$(grep -m 1 "^# " Releases.md | sed 's/^# //')
-        MANIFEST_VER=$(python3 -c "import json; print(json.load(open('ethos_lua_manifest.json'))['version'])")
-        SCRIPT_VER=$(grep -m 1 'local scriptVersion' color-value/main.lua | sed 's/.*"\(.*\)".*/\1/')
+        MD_VER=$(grep -m 1 "^# " ${{ env.RELEASES_MD }} | sed 's/^# //')
+        SCRIPT_VER=$(grep -m 1 'local scriptVersion' ${APP_NAME}/main.lua | sed 's/.*"\(.*\)".*/\1/')
         echo "Tag version      : ${{ env.GIT_VER }}"
-        echo "Releases.md      : ${MD_VER}"
-        echo "Manifest version : ${MANIFEST_VER}"
         echo "scriptVersion    : ${SCRIPT_VER}"
         FAIL=0
-        if [[ "${MD_VER}" != "${{ env.GIT_VER }}" ]]; then
-          echo "::error::Releases.md version (${MD_VER}) does not match tag (${{ env.GIT_VER }})"
-          FAIL=1
-        fi
-        if [[ "${MANIFEST_VER}" != "${{ env.GIT_VER }}" ]]; then
-          echo "::error::ethos_lua_manifest.json version (${MANIFEST_VER}) does not match tag (${{ env.GIT_VER }})"
-          FAIL=1
-        fi
         if [[ "${SCRIPT_VER}" != "${{ env.GIT_VER }}" ]]; then
           echo "::error::scriptVersion in main.lua (${SCRIPT_VER}) does not match tag (${{ env.GIT_VER }})"
           FAIL=1
         fi
         exit ${FAIL}
 
+    - name: Update manifest
+      run: |
+        python3 .github/scripts/update-manifest.py
+
     - name: Make release package
       run: |
-          zip -q -r "ethos-color-value-${{ env.GIT_VER }}.zip" color-value* ethos_lua_manifest.json
+          zip -q -r "${{ env.REPO_NAME }}-${{ env.GIT_VER }}.zip" ${{ env.APP_NAME }}* ${{ env.MANIFEST_FILE }}
           echo '{"version":"${{ env.GIT_VER }}"}' > version.json
 
     - name: Create Release
       run: |
-        python3 .github/scripts/extract-release-notes.py "${{ env.GIT_VER }}" Releases.md > Notes.md
+        python3 .github/scripts/extract-release-notes.py > Notes.md
         gh release create "${{ env.GIT_TAG }}" \
           --notes-file Notes.md \
           --title "Color Value Lua Widget for Ethos - ${{ env.GH_TYPE }} ${{ env.GIT_VER }}" \
           $( [[ "${{ env.GH_TYPE }}" == "Release Candidate" ]] && echo "--prerelease" ) \
+          $( [[ "${{ env.GH_TYPE }}" == "Release" ]] && echo "--draft" ) \
           *.zip version.json
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

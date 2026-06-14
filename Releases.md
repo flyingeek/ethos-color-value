@@ -1,4 +1,4 @@
-# 1.1.2-rc8
+# <Version> - This is set by script
 
 This is a pre-release version, if you do not intend to help by reporting bugs, please use the released stable version instead.
 

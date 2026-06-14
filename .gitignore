@@ -1,11 +1,8 @@
 *.luac
 .DS_Store
 .vscode/*
-!.vscode/update-manifest.py
-!.vscode/scripts/
-.vscode/scripts/*
-!.vscode/scripts/update-manifest.py
+!.vscode/extensions.json
 .markdownlint.json
-simulator
+simulators
 library
 .luarc.json
