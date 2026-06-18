@@ -1,5 +1,6 @@
 # This workflow updates the version badges for release and preview versions.
-# It runs on every push to a tag matching 'release/*' and can also be triggered manually.
+# It runs on every push to a tag matching 'release/*', when a draft release is published,
+# and can also be triggered manually.
 #
 # To set up GitHub Pages for this repository:
 # Settings -> Pages -> Source -> GitHub Actions
@@ -7,6 +8,7 @@
 # Run the workflow once manually from Actions → Update Version Badges → Run workflow
 #
 # Dependancies: git tag --list 'release/*' --sort=-version:refname order must be compatible with your versioning scheme
+# Draft releases are excluded from badges by filtering against the GitHub API published releases list.
 #
 name: Update Version Badges
 
@@ -14,6 +16,8 @@ on:
   push:
     tags:
       - 'release/*'
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -40,19 +44,27 @@ jobs:
 
       - name: Generate badge JSON
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
           mkdir -p site
 
+          # Get published (non-draft) tag names from the GitHub API
+          gh release list --limit 100 --json tagName,isDraft \
+            | jq -r '.[] | select(.isDraft == false) | .tagName' > /tmp/published.txt
+
           PREVIEW=$(
             git tag --list 'release/*' --sort=-version:refname \
+            | grep -Fx -f /tmp/published.txt \
             | head -n1
           )
 
           STABLE=$(
             git tag --list 'release/*' --sort=-version:refname \
-            | grep -E '^release/[0-9]+\.[0-9]+\.[0-9]+$' \
+            | grep -E '^release/[0-9]+[.][0-9]+[.][0-9]+$' \
+            | grep -Fx -f /tmp/published.txt \
             | head -n1
           )
 
