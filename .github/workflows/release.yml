@@ -5,7 +5,7 @@
 # - create a version.json file for the release (this was used for badges, now deprecated).
 # - create a Release Note from Release.md, changes only for pre-releases, full for releases.
 #
-# Release candidates are tagged with a suffix, e.g. 'release/1.2.3-rc1', and are published as pre-releases.
+# Release candidates are tagged with a suffix, e.g. 'release/1.2.3-rc1', and are published as draft pre-releases.
 # Release e.g. 'release/1.2.3' are published as draft so that they can be reviewed before publishing. Draft releases can be published manually from the GitHub UI.
 #
 # Dependancies:
@@ -83,7 +83,7 @@ jobs:
         gh release create "${{ env.GIT_TAG }}" \
           --notes-file Notes.md \
           --title "Color Value Lua Widget for Ethos - ${{ env.GH_TYPE }} ${{ env.GIT_VER }}" \
-          $( [[ "${{ env.GH_TYPE }}" == "Release Candidate" ]] && echo "--prerelease" ) \
+          $( [[ "${{ env.GH_TYPE }}" == "Release Candidate" ]] && echo "--prerelease --draft" ) \
           $( [[ "${{ env.GH_TYPE }}" == "Release" ]] && echo "--draft" ) \
           *.zip version.json
       env:

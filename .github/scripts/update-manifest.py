@@ -8,7 +8,7 @@ CUSTOM_MARKDOWN_TEMPLATE = """
 
 ## Download ![Release](https://img.shields.io/endpoint?url={url_release}) ![Preview](https://img.shields.io/endpoint?url={url_preview})
 
-You can download the latest version on the [latest stable release page](https://github.com/{repo_owner}/{repo_slug}/releases/latest), or browse all available [releases](https://github.com/{repo_owner}/{repo_slug}/releases).
+You can download the latest version on the [latest stable release page](https://github.com/{repo_owner}/{repo_slug}/releases/latest), or browse all available [releases and previews](https://github.com/{repo_owner}/{repo_slug}/releases).
 """
 
 
