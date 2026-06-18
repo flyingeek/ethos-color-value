@@ -4,5 +4,6 @@
 !.vscode/extensions.json
 .markdownlint.json
 simulators
+simulator
 library
 .luarc.json
