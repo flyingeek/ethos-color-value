@@ -46,4 +46,4 @@ if [[ "${CONFIRM}" != "y" && "${CONFIRM}" != "Y" ]]; then
 fi
 
 # Proceed with the actual release
-bash .vscode/release-tag-and-push.sh "${RELEASE_TAG}" "${APP}"
+bash .scripts/release-tag-and-push.sh "${RELEASE_TAG}" "${APP}"
