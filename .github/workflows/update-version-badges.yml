@@ -4,7 +4,7 @@
 #
 # To set up GitHub Pages for this repository:
 # Settings -> Pages -> Source -> GitHub Actions
-# Settings -> Environments -> github-pages -> main + dev
+# Settings -> Environments -> github-pages -> main + dev + release/*
 # Run the workflow once manually from Actions → Update Version Badges → Run workflow
 #
 # Dependancies: git tag --list 'release/*' --sort=-version:refname order must be compatible with your versioning scheme
