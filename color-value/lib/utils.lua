@@ -1,10 +1,9 @@
+---@type L
 ---@diagnostic disable-next-line: undefined-global
+local L = L
 local defaultSourcePrecision = L.defaultSourcePrecision
----@diagnostic disable-next-line: undefined-global
 local isUTF8Compatible = L.isUTF8Compatible
----@diagnostic disable-next-line: undefined-global
 local __ = L.translate
----@diagnostic disable-next-line: undefined-global
 local needsDialogReflow = L.needsDialogReflow
 
 local ANSI_BLACK = "\27[1;30m"
@@ -24,6 +23,7 @@ local function logMessage(ansiColor, ...)
     print(ansiColor .. "[cv] " .. message .. ANSI_RESET)
 end
 
+---@class log
 local log = {}
 setmetatable(log, { __call = function(_, ...) logMessage(ANSI_CYAN, ...) end })
 log.red = function(...) logMessage(ANSI_RED, ...) end
@@ -31,6 +31,7 @@ log.error = log.red
 log.green = function(...) logMessage(ANSI_GREEN, ...) end
 log.yellow = function(...) logMessage(ANSI_YELLOW, ...) end
 log.warn = log.yellow
+log.warning = log.yellow
 log.cyan = function(...) logMessage(ANSI_CYAN, ...) end
 log.black = function(...) logMessage(ANSI_BLACK, ...) end
 
@@ -102,6 +103,7 @@ local function prettyTableCompactImpl(tbl, maxDepth, visited)
     return "{" .. table.concat(parts, ", ") .. "}"
 end
 
+---@class prettyTable
 local prettyTable = {}
 setmetatable(prettyTable, {
     __call = function(_, tbl, maxDepth)

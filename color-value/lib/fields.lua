@@ -1,7 +1,6 @@
----@class FormLine
----@class NumberEdit
-
+---@type L
 ---@diagnostic disable-next-line: undefined-global
+local L = L
 local defaultSourcePrecision = L.defaultSourcePrecision  -- defined in running env
 
 --- addDynamicSourceNumberField
@@ -28,6 +27,7 @@ local function addFactoredNumberField(line, rect, min, max, getValue, setValue)
             function() return factorInt( getValue(), field and field:decimals() or 0) end,
             function(newValue) return setValue(factorFloat(newValue, field and field:decimals() or 0)) end)
 
+    ---@param source Source|nil
     local updateFromSource = function (source)
         local defaultSuffix = ""
         local defaultMaximum = 1024  -- TODO which value should be here ?

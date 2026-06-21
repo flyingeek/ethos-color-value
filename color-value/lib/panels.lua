@@ -1,7 +1,14 @@
+---@type L
 ---@diagnostic disable-next-line: undefined-global
 local L = L
 local __ = L.translate
 
+
+---@param line FormLine
+---@param x integer|number|nil
+---@param label string
+---@param color integer|nil
+---@return FrSkyStaticTextLib, Rect
 local function positionLabel(line, x, label, color)
     local slots = form.getFieldSlots(line, { L.replaceUTF8(label, "e"), 0 })
     if x == nil then x = slots[1].x - slots[1].w - 10 end
@@ -12,14 +19,21 @@ local function positionLabel(line, x, label, color)
     return field, rect
 end
 
-local logicPanelHighlighter = function(widget) end -- to be set by fillLogicPanel, used to higlight the matching case when the source value change
+---@param widgetInstance Widget|nil
+local logicPanelHighlighter = function(widgetInstance) end -- to be set by fillLogicPanel, used to higlight the matching case when the source value change
 
+---@param panel ExpansionPanel|nil
+---@param widget Widget|nil
+---@param grabFocus boolean|nil
 local function fillLogicPanel(panel, widget, grabFocus)
     local secondaryColor = L.secondaryColor
     local lcdWidth = system.getVersion().lcdWidth
-    if panel == nil then return end
+    if panel == nil or widget == nil then return end
     if grabFocus == nil then grabFocus = true end
 
+    ---@param index integer
+    ---@param tag string
+    ---@param method string
     local function appendTag(index, tag, method)
         local logic = widget.logics:get(index)
         if logic then
@@ -29,6 +43,8 @@ local function fillLogicPanel(panel, widget, grabFocus)
             fillLogicPanel(panel, widget)
         end
     end
+    ---@param i integer
+    ---@param method string
     local function buildTagButtons(i, method)
         local buttons = {}
         if lcdWidth >= 800 then
@@ -96,6 +112,11 @@ local function fillLogicPanel(panel, widget, grabFocus)
     end
     local dialogWidth = math.floor(lcd.getWindowSize() * 0.9)
     local tagButtonText = "  ...  "
+    ---@param line FormLine
+    ---@param rect Rect|nil
+    ---@param i integer
+    ---@param method string
+    ---@return LuaButton
     local function addTagButton(line, rect, i, method)
         return form.addButton(line, rect,
             { -- tag dialog
@@ -140,14 +161,13 @@ local function fillLogicPanel(panel, widget, grabFocus)
     -- the conditionLabel "If sourcename" is shared with all logic case
     local conditionLabel = L.sourceExists(widget.source) and widget.source:name() or ""
     if conditionLabel ~= "" then conditionLabel = string.format(__("conditionLabel"), conditionLabel) end
-    local activeColor = THEME_ACTIVE_COLOR and lcd.themeColor(THEME_ACTIVE_COLOR) or COLOR_GREEN
-    local inactiveColor = THEME_INACTIVE_COLOR and lcd.themeColor(THEME_INACTIVE_COLOR) or COLOR_RED
     local caseTexts = {} -- a list of all the "Case%d" staticTextField
     -- hightlight or normalizes all the case based on the logic conditions
     -- might be called outside fillLogicPanel (wakeup)
     -- must be set in the L namespace
+    ---@param widgetInstance Widget|nil
     L.logicPanelHighlighter = function(widgetInstance)
-        if widgetInstance.id ~= widget.id then return end -- wakeup call guard
+        if widget == nil or widgetInstance == nil or widgetInstance.id ~= widget.id then return end -- wakeup call guard
         if widgetInstance and caseTexts then -- guards
             -- must read the color within this function because the theme color can change at any time
             local activeColor = THEME_ACTIVE_COLOR and lcd.themeColor(THEME_ACTIVE_COLOR) or COLOR_GREEN

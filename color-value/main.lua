@@ -14,6 +14,7 @@ local valueFonts = { FONT_XXL, FONT_XL, FONT_L, FONT_M or FONT_STD, FONT_S }
 local minmaxFonts = { FONT_M or FONT_STD, FONT_S, FONT_XS }
 
 system.compile("lib/init.lua")
+---@type L
 local L = assert(loadfile("lib/init.luac", "b")({
     -- those parameters are accessible under the L namespace
     defaultSourcePrecision = 0,
@@ -39,11 +40,13 @@ local function legacyDarkMode()
 end
 
 ---this is the create method for the Color Value Widget
----@return table
+---@return Widget
 local function createTypeSource()
     widgetInstanceId = widgetInstanceId + 1
+    ---@class Widget
     local data = {
         -- configure parameters (saved in storage)
+        ---@type Source|nil
         source = nil,
         logics = L.LogicCases:new(),
         showTitle = true,
@@ -61,9 +64,13 @@ local function createTypeSource()
         timestamp = 0,           -- timestamp of last update per widget instance
         updateNextWakeup = true, -- when true, forces update of the widget in the next wakeup (used after configuration changes in write function or on init)
         -- computed parameters for paint (not saved in storage)
+        ---@type integer|nil
         width = nil,
+        ---@type integer|nil
         height = nil,
+        ---@type integer|nil
         matchingCaseIndex = nil,
+        ---@type integer|nil
         bgColor = nil,
         -- titleParameters
         titleLineHeight = 0,
@@ -94,7 +101,7 @@ local function createTypeSource()
 end
 
 ---this is the create method for the Telemetry Value Widget
----@return table
+---@return Widget
 local function createTypeSensor()
     local data = createTypeSource()
     data.type = WIDGET_TYPE_SENSOR
@@ -112,8 +119,10 @@ local function nameTypeSensor()
     return __("widgetNameTypeSensorASCII")
 end
 
+---@param widget Widget
 local function configure(widget)
     local line = form.addLine(__("source"))
+    local logicPanel
 
     local sourceField = form.addSourceField(line, nil,
         function()
@@ -137,8 +146,8 @@ local function configure(widget)
     if not L.sourceExists(widget.source) then
         sourceField:focus()
     else
-        widget.logicPanel = form.addExpansionPanel(__("logicPanel"))
-        L.fillLogicPanel(widget.logicPanel, widget)
+        logicPanel = form.addExpansionPanel(__("logicPanel"))
+        L.fillLogicPanel(logicPanel, widget)
     end
     if L.isSensor(widget.source) then
         line = form.addLine(__("showMinMax"))
@@ -153,7 +162,7 @@ local function configure(widget)
         function(newValue)
             widget.useBackgroung = newValue
             widget.updateNextWakeup = true
-            L.fillLogicPanel(widget.logicPanel, widget, false)
+            L.fillLogicPanel(logicPanel, widget, false)
         end)
 
     line = form.addLine(__("showCustomStates"))
@@ -161,7 +170,7 @@ local function configure(widget)
         function(newValue)
             widget.useState = newValue
             widget.updateNextWakeup = true
-            L.fillLogicPanel(widget.logicPanel, widget, false)
+            L.fillLogicPanel(logicPanel, widget, false)
         end)
 
     line = form.addLine(__("showTitle"))
@@ -169,7 +178,7 @@ local function configure(widget)
         function(newValue)
             widget.showTitle = newValue
             widget.updateNextWakeup = true
-            L.fillLogicPanel(widget.logicPanel, widget, false)
+            L.fillLogicPanel(logicPanel, widget, false)
         end)
     local panel = form.addExpansionPanel(__("infoPanelTitle"))
     if panel then
@@ -181,9 +190,9 @@ local function configure(widget)
         line = panel:addLine(__("infoPanelAuthor"))
         form.addStaticText(line, nil, scriptAuthor)
     end
-    widget.focus = nil
 end
 
+---@param widget Widget
 local function updateParameters(widget)
     local clearIndex
     local matchingCase = widget.matchingCaseIndex and widget.logics:get(widget.matchingCaseIndex) or nil
@@ -289,7 +298,9 @@ local function updateParameters(widget)
     end
 end
 
+---@param widget Widget
 local function wakeup(widget)
+    if widget == nil then return end
     local newTimestamp = os.clock()
     local enforceUpdate = widget.updateNextWakeup
     if widget.source and (enforceUpdate or newTimestamp >= widget.timestamp + refreshRate) then
@@ -336,8 +347,9 @@ local function wakeup(widget)
     end
 end
 
+---@param widget Widget
 local function paint(widget)
-    if not L.sourceExists(widget.source) then return end
+    if widget == nil or not L.sourceExists(widget.source) then return end
     local focusBgColor = L.focusBgColor
     local valueColor = widget.valueColor
     local titleColor = widget.titleColor
@@ -397,7 +409,9 @@ local function paint(widget)
     end
 end
 
+---@param widget Widget
 local function read(widget)
+    if widget == nil then return end
     local value
     local upgradeLogicsFromV1 = false
     widget.source = storage.read("source")
@@ -435,7 +449,9 @@ local function read(widget)
     end
 end
 
+---@param widget Widget
 local function write(widget)
+    if widget == nil or not L.sourceExists(widget.source) then return true end
     storage.write("source", widget.source)
     storage.write("showTitle", widget.showTitle)
     storage.write("logics", "") -- erase v1 storage as of 1.1.0-rc3
@@ -457,7 +473,9 @@ local function write(widget)
     end
 end
 
+---@param widget Widget
 local function menu(widget)
+    if widget == nil or not L.sourceExists(widget.source) then return {} end
     local menuData = {}
     if widget.source and widget.source.reset then
         if not widget.showMinMax and L.isSensor(widget.source) then
@@ -505,7 +523,9 @@ local function menu(widget)
     return menuData
 end
 
+---@param widget Widget
 local function build(widget)
+    if widget == nil then return end
     L.secondaryColor = lcd.themeColor(THEME_SECONDARY_COLOR or 14)
     L.defaultColor = lcd.themeColor(THEME_PRIMARY_COLOR or THEME_DEFAULT_COLOR)
     if (ethosVersion.major or 0) >= 26 then

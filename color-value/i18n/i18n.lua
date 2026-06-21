@@ -6,8 +6,12 @@ system.compile("i18n/en.lua")
 local i18nMap = {
   en = assert(loadfile("i18n/en.luac", "b"))(),
 }
+---@alias locale  "cs" | "de" |"en" | "es" | "fr" | "it"
 
 local i18nFiles = system.listFiles("i18n")
+
+---change Locale
+---@param newLocale locale
 local function changeLocale(newLocale)
     if newLocale == locale then return end
     if locale and locale ~= "en" then i18nMap[locale] = nil end
@@ -23,7 +27,7 @@ local function changeLocale(newLocale)
 end
 changeLocale(system.getLocale())
 
-local function translate(key, paramTable)
+local function translate(key)
     local ANSI_BOLD_YELLOW = "\27[1;33m"
     local ANSI_RESET = "\27[0m"
     local cKey = key

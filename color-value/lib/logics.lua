@@ -1,13 +1,15 @@
+---@type L
 ---@diagnostic disable-next-line: undefined-global
+local L = L
 local isTimer = L.isTimer
----@diagnostic disable-next-line: undefined-global
 local sourceExists = L.sourceExists
----@diagnostic disable-next-line: undefined-global
 local trim = L.trim
----@diagnostic disable-next-line: undefined-global
 local formatWithDecimals = L.formatWithDecimals
 
 local defaultThreshold = 0
+local getDefaultLogicColor = function()
+    return lcd.themeColor(THEME_ERROR_COLOR or THEME_WARNING_COLOR) or COLOR_RED
+end
 
 local OPE_NONE = 0
 local OPE_LESS = 5
@@ -17,6 +19,9 @@ local OPE_LESS_OR_EQUAL = 20
 local OPE_EQUAL = 25
 local epsilon = 1e-6
 
+
+---@param s string|nil
+---@return string
 local function encode(s)
     if not s then return "" end
     -- replace any "\x" by \ddd (as \x should not be in user input)
@@ -29,6 +34,9 @@ local function encode(s)
     end)
     return encoded
 end
+
+---@param s string|nil
+---@return string
 local function decode(s)
     if not s then return "" end
     -- replace any \ddd by char(d)
@@ -37,20 +45,28 @@ local function decode(s)
     end)
     return decoded
 end
+
+---@param s string|nil
+---@return string
 local function escape(s)
     -- a safe string to store
     return encode(decode(s))
 end
 
+---@param pattern string
 local function escapePattern(pattern)
     local escaped = select(1,
         string.gsub(pattern, "[^%w]", function(x) return string.format("\\%03d", string.byte(x)) end))
     return escaped
 end
 
+
+---@param s string
+---@param source Source|nil
+---@return string
 local function replaceTag(s, source)
     local formatted = s
-    if sourceExists(source) then
+    if source and sourceExists(source) then
         formatted = (formatted:gsub("_(%d)v", -- replace _0v _1v ..._9v
                 function(digit)
                     local n = tonumber(digit) or 0
@@ -76,6 +92,10 @@ local function replaceTag(s, source)
     return formatted
 end
 
+---Loop through each line of a text and parse tags, calling onLine for each line
+---@param text string|nil
+---@param source Source|nil
+---@param onLine nil|fun(line: string):(nil|false)
 local function parseTagsEach(text, source, onLine)
     if not onLine then return end
     if not text then
@@ -99,20 +119,28 @@ local function parseTagsEach(text, source, onLine)
     end
 end
 
+---@class LogicCase
+---@field color integer
+---@field bgcolor integer|nil
 local LogicCase = {
     threshold = defaultThreshold,
     ope = OPE_LESS,
     text = "",
     title = ""
 }
+---@param o table|nil
+---@return LogicCase
 function LogicCase:new(o)
     o = o or {}
     setmetatable(o, self)
     self.__index = self
-    o.color = o.color or lcd.themeColor(THEME_ERROR_COLOR or THEME_WARNING_COLOR)
+    o.color = o.color or getDefaultLogicColor()
     return o
 end
 
+
+---@param value integer|number|nil
+---@return boolean
 function LogicCase:test(value)
     if value then
         if self.ope == OPE_NONE then
@@ -136,17 +164,22 @@ function LogicCase:test(value)
     return false
 end
 
+---@return string
 function LogicCase:__tostring()
     return string.format("LogicCase: ope=%s, threshold=%s, color=%s bgcolor=%s text=%s title=%s", self.ope,
         self.threshold, self.color, self.bgcolor, self.text, self.title)
 end
 
+---@return string
 function LogicCase:asStorageString()
     return string.format("%s,%s,%s,%s,%s,%s", self.ope, self.threshold, self.color,
         self.bgcolor, escape(trim(self.text)), escape(trim(self.title)))
 end
 
+---@param s string|nil
+---@return LogicCase
 function LogicCase:loadStorageString(s)
+    if not s then return self end
     local t = {}
     for m in string.gmatch(s, "([^,]*)") do
         table.insert(t, m)
@@ -154,9 +187,9 @@ function LogicCase:loadStorageString(s)
     if #t ~= 6 then
         warn("LogicCase:loadString bad format " .. s)
     end
-    if t[1] ~= nil then self.ope = tonumber(t[1]) end
-    if t[2] ~= nil then self.threshold = tonumber(t[2]) end
-    if t[3] ~= nil then self.color = tonumber(t[3]) end
+    if t[1] ~= nil then self.ope = tonumber(t[1]) or OPE_LESS end
+    if t[2] ~= nil then self.threshold = tonumber(t[2]) or defaultThreshold end
+    if t[3] ~= nil then self.color = tonumber(t[3]) or getDefaultLogicColor() end
     if t[4] ~= nil then self.bgcolor = tonumber(t[4]) else self.bgcolor = nil end
     if t[5] ~= nil then self.text = decode(t[5]) end
     if t[6] ~= nil then self.title = decode(t[6]) end
@@ -165,25 +198,31 @@ function LogicCase:loadStorageString(s)
     return self
 end
 
+---@param s string|nil
 function LogicCase:appendText(s)
     if s then
         self.text = self.text .. tostring(s)
     end
 end
 
+---@param s string|nil
 function LogicCase:appendTitle(s)
     if s then
         self.title = self.title .. tostring(s)
     end
 end
 
+---@class LogicCases
+---@field logicCases LogicCase[]
 local LogicCases = {}
 
+---@param source Source|nil
+---@return LogicCases
 function LogicCases:new(source)
     local o = { logicCases = {} }
     setmetatable(o, self)
     self.__index = self
-    if isTimer(source) then
+    if source and isTimer(source) then
         local timer = model.getTimer(source:member())
         if timer then
             local direction = timer:direction()
@@ -202,6 +241,7 @@ function LogicCases:new(source)
     return o
 end
 
+---@return string
 function LogicCases:__tostring()
     local out = "{"
     for k, logicCase in pairs(self.logicCases) do
@@ -212,6 +252,9 @@ function LogicCases:__tostring()
     return out
 end
 
+
+---@param logicCase LogicCase|nil
+---@return LogicCase
 function LogicCases:add(logicCase)
     local newLogic = logicCase
     if newLogic == nil then -- add a new logic from configure panel
@@ -226,12 +269,16 @@ function LogicCases:add(logicCase)
     return newLogic
 end
 
+
+---@param pos integer
+---@return LogicCases
 function LogicCases:remove(pos)
     table.remove(self.logicCases, pos)
     return self
 end
 
 -- legacy function string too long for storage with text and title include
+---@return string
 function LogicCases:asStorageString()
     local out = ""
     for i, logicCase in pairs(self.logicCases) do
@@ -242,19 +289,31 @@ function LogicCases:asStorageString()
 end
 
 ---- legacy function used to migrate from v1
+---@param s string|nil
+---@return LogicCases
 function LogicCases:loadStorageString(s)
+    if not s then return self end
     for line in string.gmatch(s, "([^/]+)") do
         table.insert(self.logicCases, LogicCase:new():loadStorageString(line))
     end
     return self
 end
 
+---@param pos integer
+---@return LogicCase
 function LogicCases:get(pos)
     return self.logicCases[pos]
 end
 
+
+---@param value string|integer|number|nil
+---@return integer|nil
 function LogicCases:matchIndex(value)
     if not value then return nil end
+    if type(value) == "string" then
+        value = tonumber(value)
+        if not value then return nil end
+    end
     local index
     for i, logicCase in pairs(self.logicCases) do
         if logicCase:test(value) then
@@ -265,8 +324,14 @@ function LogicCases:matchIndex(value)
     return index
 end
 
+---@param value string|integer|number|nil
+---@return LogicCase|nil
 function LogicCases:match(value)
     if not value then return nil end
+    if type(value) == "string" then
+        value = tonumber(value)
+        if not value then return nil end
+    end
     local matchingCase
     for i, logicCase in pairs(self.logicCases) do
         if logicCase:test(value) then
@@ -277,6 +342,7 @@ function LogicCases:match(value)
     return matchingCase
 end
 
+---@return integer
 function LogicCases:count()
     return #(self.logicCases)
 end
