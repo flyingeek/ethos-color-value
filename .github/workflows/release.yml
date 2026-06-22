@@ -9,7 +9,7 @@
 # Release e.g. 'release/1.2.3' are published as draft so that they can be reviewed before publishing. Draft releases can be published manually from the GitHub UI.
 #
 # Dependancies:
-# ethos_lua_manifest.json and Releases.md are hardcoded in jobs/build/env
+# app_title, ethos_lua_manifest.json and Releases.md are hardcoded in jobs/build/env
 #
 
 name: Release
@@ -31,6 +31,7 @@ jobs:
       REPO_NAME: ${{ github.event.repository.name }}
       REPO_OWNER: ${{ github.repository_owner }}
       APP_NAME: ''
+      APP_TITLE: 'Color Value Lua Widget for Ethos'
       MANIFEST_FILE: ethos_lua_manifest.json
       RELEASES_MD: Releases.md
 
@@ -83,7 +84,7 @@ jobs:
         python3 .github/scripts/extract-release-notes.py > Notes.md
         gh release create "${{ env.GIT_TAG }}" \
           --notes-file Notes.md \
-          --title "Color Value Lua Widget for Ethos - ${{ env.GH_TYPE }} ${{ env.GIT_VER }}" \
+          --title "${{ env.APP_TITLE }} - ${{ env.GH_TYPE }} ${{ env.GIT_VER }}" \
           $( [[ "${{ env.GH_TYPE }}" == "Release Candidate" ]] && echo "--prerelease --draft" ) \
           $( [[ "${{ env.GH_TYPE }}" == "Release" ]] && echo "--draft" ) \
           *.zip version.json
