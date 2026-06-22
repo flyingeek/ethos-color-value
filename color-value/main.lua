@@ -60,10 +60,10 @@ local function createTypeSource()
         maximum = nil,
         telemetryState = nil,
         -- others
-        id = widgetInstanceId, -- unique id for each widget instance, required by the logicCaseHighlighter
+        id = widgetInstanceId,   -- unique id for each widget instance, required by the logicCaseHighlighter
         timestamp = 0,           -- timestamp of last update per widget instance
         updateNextWakeup = true, -- when true, forces update of the widget in the next wakeup (used after configuration changes in write function or on init)
-        -- computed parameters for paint (not saved in storage)
+        -- computed parameters for paint
         ---@type integer|nil
         width = nil,
         ---@type integer|nil
