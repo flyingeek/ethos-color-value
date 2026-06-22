@@ -74,7 +74,8 @@ jobs:
 
     - name: Make release package
       run: |
-          zip -q -r "${{ env.REPO_NAME }}-${{ env.GIT_VER }}.zip" ${{ env.APP_NAME }}* ${{ env.MANIFEST_FILE }}
+          zip -q -r "${{ env.REPO_NAME }}-${{ env.GIT_VER }}.zip" ${{ env.APP_NAME }}*
+          # zip -q -r "${{ env.REPO_NAME }}-${{ env.GIT_VER }}.zip" ${{ env.APP_NAME }}* ${{ env.MANIFEST_FILE }}
           echo '{"version":"${{ env.GIT_VER }}"}' > version.json
 
     - name: Create Release
