@@ -421,15 +421,18 @@ local function read(widget)
     local value
     local upgradeLogicsFromV1 = false
     widget.source = storage.read("source")
-    widget.showTitle = storage.read("showTitle")
+    value = storage.read("showTitle")
+    if value ~= nil then widget.showTitle = value end
     -- backward compatibility v1
     value = storage.read("logics")
     if value and type(value) == "string" and value ~= "" then
         widget.logics = L.LogicCases:new():loadStorageString(value)
         upgradeLogicsFromV1 = true
     end
-    widget.showMinMax = storage.read("showMinMax")
-    widget.type = storage.read("type")
+    value = storage.read("showMinMax")
+    if value ~= nil then widget.showMinMax = value end
+    value = storage.read("type")
+    if value ~= nil then widget.type = value end
     -- version 1.1
     value = storage.read("useBackgroung")
     if value ~= nil then widget.useBackgroung = value end
