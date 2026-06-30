@@ -1,4 +1,4 @@
-local scriptVersion = "1.1.2-rc9"
+local scriptVersion = "1.1.2-rc10"
 local scriptAuthor = "github.com/flyingeek"
 local githubRepo = "ethos-color-value"
 local refreshRate = 1 / 10 -- 10Hz
