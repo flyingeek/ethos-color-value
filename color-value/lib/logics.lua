@@ -138,7 +138,6 @@ function LogicCase:new(o)
     return o
 end
 
-
 ---@param value integer|number|nil
 ---@return boolean
 function LogicCase:test(value)
@@ -181,9 +180,14 @@ end
 function LogicCase:loadStorageString(s)
     if not s then return self end
     local t = {}
-    for m in string.gmatch(s, "([^,]*)") do
-        table.insert(t, m)
+    local pos = 1
+    for _ = 1, 5 do
+        local next = s:find(",", pos, true)
+        if not next then break end
+        table.insert(t, s:sub(pos, next - 1))
+        pos = next + 1
     end
+    table.insert(t, s:sub(pos)) -- last field (no trailing comma needed)
     if #t ~= 6 then
         warn("LogicCase:loadString bad format " .. s)
     end
@@ -252,7 +256,6 @@ function LogicCases:__tostring()
     return out
 end
 
-
 ---@param logicCase LogicCase|nil
 ---@return LogicCase
 function LogicCases:add(logicCase)
@@ -268,7 +271,6 @@ function LogicCases:add(logicCase)
     table.insert(self.logicCases, newLogic)
     return newLogic
 end
-
 
 ---@param pos integer
 ---@return LogicCases
@@ -304,7 +306,6 @@ end
 function LogicCases:get(pos)
     return self.logicCases[pos]
 end
-
 
 ---@param value string|integer|number|nil
 ---@return integer|nil
