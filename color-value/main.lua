@@ -460,7 +460,7 @@ end
 
 ---@param widget Widget
 local function write(widget)
-    if widget == nil or not L.sourceExists(widget.source) then return true end
+    if widget == nil then return true end
     storage.write("source", widget.source)
     storage.write("showTitle", widget.showTitle)
     storage.write("logics", "") -- erase v1 storage as of 1.1.0-rc3
