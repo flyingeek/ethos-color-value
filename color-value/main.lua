@@ -14,6 +14,18 @@ local valueFonts = { FONT_XXL, FONT_XL, FONT_L, FONT_M or FONT_STD, FONT_S }
 local minmaxFonts = { FONT_M or FONT_STD, FONT_S, FONT_XS }
 
 system.compile("lib/init.lua")
+-- lcd.darkMode is deprecated in v26
+local function legacyDarkMode()
+    ---@diagnostic disable-next-line: deprecated
+    return lcd.darkMode and lcd.darkMode() or false
+end
+local getDefaultWidgetBgColor = function()
+    if (ethosVersion.major or 0) >= 26 then
+        return lcd.themeColor(THEME_PRIMARY_BGCOLOR)
+    else
+        return legacyDarkMode() and lcd.RGB(0x29, 0x29, 0x29) or lcd.RGB(0xF6, 0xF3, 0xF7)
+    end
+end
 ---@type L
 local L = assert(loadfile("lib/init.luac", "b")({
     -- those parameters are accessible under the L namespace
@@ -26,18 +38,13 @@ local L = assert(loadfile("lib/init.luac", "b")({
     MAX_CONDITIONS = 5,                               -- be careful for storage(read/write) if you change this
     secondaryColor = 0,                               -- set in build
     defaultColor = 0,                                 -- set in build
-    defaultWidgetBgColor = lcd.RGB(0x29, 0x29, 0x29), -- set in build if lcd.darkMode is available or v>=26
+    defaultWidgetBgColor = getDefaultWidgetBgColor(), -- set in build if lcd.darkMode is available or v>=26
     focusBgColor = COLOR_BLACK,                       -- set in build if lcd.darkMode is available or v>=26
 }, "L"))                                              -- here "L" is the namespace used in the lib files
 
 local __ = L.translate
 local log = L.log
 
--- lcd.darkMode is deprecated in v26
-local function legacyDarkMode()
-    ---@diagnostic disable-next-line: deprecated
-    return lcd.darkMode and lcd.darkMode() or false
-end
 
 ---this is the create method for the Color Value Widget
 ---@return Widget
@@ -123,7 +130,6 @@ end
 local function configure(widget)
     local line = form.addLine(__("source"))
     local logicPanel
-
     local sourceField = form.addSourceField(line, nil,
         function()
             if widget.type == WIDGET_TYPE_SENSOR and widget.source == nil then
@@ -528,8 +534,8 @@ local function build(widget)
     if widget == nil then return end
     L.secondaryColor = lcd.themeColor(THEME_SECONDARY_COLOR or 14)
     L.defaultColor = lcd.themeColor(THEME_PRIMARY_COLOR or THEME_DEFAULT_COLOR)
+    L.defaultWidgetBgColor = getDefaultWidgetBgColor()
     if (ethosVersion.major or 0) >= 26 then
-        L.defaultWidgetBgColor = lcd.themeColor(THEME_PRIMARY_BGCOLOR)
         if THEME_HIGHLIGHT_CONTRASTING_COLOR then
             L.focusBgColor = lcd.themeColor(THEME_HIGHLIGHT_CONTRASTING_COLOR)
         else
@@ -537,7 +543,6 @@ local function build(widget)
         end
     else
         local isDarkMode = legacyDarkMode()
-        L.defaultWidgetBgColor = isDarkMode and lcd.RGB(0x29, 0x29, 0x29) or lcd.RGB(0xF6, 0xF3, 0xF7)
         L.focusBgColor = isDarkMode and COLOR_BLACK or COLOR_WHITE
     end
     widget.width, widget.height = lcd.getWindowSize()
